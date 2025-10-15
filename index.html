@@ -1,1 +1,1426 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Player</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Audio Player" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#4a90e2" />
+
+    <!-- PWA Icons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMjAiIGZpbGw9IiM0YTkwZTIiLz4KPHN2ZyB4PSI0NSIgeT0iNDUiIHdpZHRoPSI5MCIgaGVpZ2h0PSI5MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik04IDV2MTRsNy03eiIvPgo8L3N2Zz4KPC9zdmc+" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzRhOTBlMiIvPgo8c3ZnIHg9IjgiIHk9IjgiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik04IDV2MTRsNy03eiIvPgo8L3N2Zz4KPC9zdmc+" />
+
+    <!-- PWA Manifest -->
+    <link
+      rel="manifest"
+      href="data:application/json;base64,ewogICJuYW1lIjogIkF1ZGlvIFBsYXllciIsCiAgInNob3J0X25hbWUiOiAiQXVkaW8gUGxheWVyIiwKICAiZGVzY3JpcHRpb24iOiAiQSBtaW5pbWFsIGF1ZGlvIHBsYXllciB3aXRoIHNlbnRlbmNlIGRldGVjdGlvbiBhbmQgc3VidGl0bGUgc3VwcG9ydCIsCiAgInN0YXJ0X3VybCI6ICIuLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2Y1ZjdmYSIsCiAgInRoZW1lX2NvbG9yIjogIiM0YTkwZTIiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlOVEV5SWlCb1pXbG5hSFE5SWpVeE1pSWlJSFpwWlhkQ2IzZzlJakFnTUNBMU1USWdOVEV5SWlCbWFXeHNQU0p1YjI1bElpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaVBnbzhjbVZqZENCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlpSUhKNFBTSXlNQ0lpSUdacGJHdzlJaU0wWVRrd1pUSWlMejRLUEhOMlp5QjRQU0k0TWlJZ2VUMGlPREVpSUhkcFpIUm9QU0l6TkRnaUlHaGxhV2RvZEQwaU16UTRJaUIyYVdWM1FtOTRQU0l3SURBZ01qUWdNalFpSUdacGJHdzlJbmRvYVhSbElqNEtQSEJoZEdnZ1pEMGlUVGcySURWMk1UUnNOeTAzZWlJdlBnbzhMM04yWno0S1BDOXpkbWMrIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlNVGd3SWlCb1pXbG5hSFE5SWpFNE1DSWlJSFpwWlhkQ2IzZzlJakFnTUNBeE9EQWdNVGd3SWlCbWFXeHNQU0p1YjI1bElpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaVBnbzhjbVZqZENCM2FXUjBhRDBpTVRnd0lpQm9aV2xuYUhROUlqRTRNQ0lpSUhKNFBTSXlNQ0lpSUdacGJHdzlJaU0wWVRrd1pUSWlMejRLUEhOMlp5QjRQU0kwTlNJZ2VUMGlORFVpSUhkcFpIUm9QU0k1TUNJZ2FHVnBaMmgwUFNJNU1DSWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lpSUdacGJHdzlJbmRvYVhSbElqNEtQSEJoZEdnZ1pEMGlUVGdnTldZeE5HeDBOeTAzZWlJdlBnbzhMM04yWno0S1BDOXpkbWMrIiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0sCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0Igp9" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 2rem;
+        font-weight: 300;
+      }
+
+      .file-info {
+        margin-bottom: 30px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        color: #666;
+        font-size: 0.9rem;
+        flex: 1;
+        text-align: left;
+        margin-right: 15px;
+        margin-bottom: 0;
+      }
+
+      .file-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 15px;
+      }
+
+      .file-row .open-file {
+        margin: 0;
+        flex-shrink: 0;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        background: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 25px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+      }
+
+      button:hover {
+        background: #357abd;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      /* iOS Safari touch handling */
+      button {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        touch-action: manipulation;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .open-file {
+        background: #28a745;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+      }
+
+      .open-file:hover {
+        background: #218838;
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      }
+
+      .open-file[style*='background: #17a2b8']:hover {
+        background: #138496 !important;
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4) !important;
+      }
+
+      .nav-button {
+        background: #6c757d;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+      }
+
+      .nav-button:hover {
+        background: #5a6268;
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+      }
+
+      .progress-container {
+        margin-bottom: 20px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4a90e2, #357abd);
+        width: 0%;
+        transition: width 0.1s ease;
+        border-radius: 10px;
+      }
+
+      .segment-marker {
+        position: absolute;
+        top: 0;
+        width: 2px;
+        height: 100%;
+        background: #28a745;
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .current-segment-marker {
+        background: #fd7e14;
+        width: 3px;
+        opacity: 1;
+      }
+      .time-display {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      .icon {
+        font-size: 1.2rem;
+      }
+
+      input[type='file'] {
+        display: none;
+      }
+
+      .status {
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+      }
+
+      .status.playing {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status.paused {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .status.stopped {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .current-text {
+        margin-top: 25px;
+        padding: 20px;
+        background: linear-gradient(135deg, #fff9e6 0%, #f0f8ff 100%);
+        border-radius: 15px;
+        border: 2px solid #e3f2fd;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .text-content {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #333;
+        text-align: center;
+        font-weight: 500;
+        max-width: 100%;
+        word-wrap: break-word;
+      }
+
+      .text-content.highlighted {
+        animation: pulse 0.3s ease;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.02);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+          margin-bottom: 20px;
+        }
+
+        .file-row {
+          flex-direction: column;
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+
+        .file-info {
+          margin-bottom: 10px;
+          padding: 10px;
+          font-size: 0.8rem;
+          margin-right: 0;
+          text-align: center;
+          width: 100%;
+        }
+
+        .file-row .open-file {
+          width: 100%;
+        }
+
+        .controls {
+          flex-direction: row;
+          flex-wrap: nowrap;
+          gap: 8px;
+          margin-bottom: 20px;
+        }
+
+        button {
+          min-width: auto;
+          padding: 10px 12px;
+          font-size: 0.8rem;
+          flex: 1;
+          justify-content: center;
+        }
+
+        .nav-button {
+          flex: 0 0 auto;
+          min-width: 60px;
+        }
+
+        #playPauseBtn {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .progress-container {
+          margin-bottom: 15px;
+        }
+
+        .current-text {
+          margin-top: 15px;
+          padding: 15px;
+          min-height: 60px;
+        }
+
+        .text-content {
+          font-size: 1rem;
+          line-height: 1.4;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .container {
+          padding: 15px;
+        }
+
+        h1 {
+          font-size: 1.3rem;
+          margin-bottom: 15px;
+        }
+
+        .file-row {
+          gap: 8px;
+          margin-bottom: 15px;
+        }
+
+        .file-info {
+          margin-bottom: 8px;
+          padding: 8px;
+          font-size: 0.75rem;
+        }
+
+        .controls {
+          gap: 6px;
+          margin-bottom: 15px;
+        }
+
+        button {
+          padding: 8px 10px;
+          font-size: 0.75rem;
+        }
+
+        .nav-button {
+          min-width: 55px;
+        }
+
+        .file-row .open-file {
+          padding: 10px 15px;
+          font-size: 0.85rem;
+        }
+
+        .icon {
+          font-size: 1rem;
+        }
+
+        .progress-bar {
+          height: 6px;
+        }
+
+        .time-display {
+          font-size: 0.8rem;
+          margin-top: 8px;
+        }
+
+        .current-text {
+          margin-top: 12px;
+          padding: 12px;
+          min-height: 50px;
+        }
+
+        .text-content {
+          font-size: 0.9rem;
+          line-height: 1.3;
+        }
+      }
+
+      /* Help Overlay Styles */
+      #helpOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      #helpOverlay.show {
+        opacity: 1;
+      }
+
+      .help-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      #helpOverlay.show .help-content {
+        transform: scale(1);
+      }
+
+      .help-content h3 {
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 1.4rem;
+      }
+
+      .shortcut-list {
+        text-align: left;
+        margin-bottom: 20px;
+      }
+
+      .shortcut-list div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .shortcut-list div:last-child {
+        border-bottom: none;
+      }
+
+      kbd {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #495057;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .help-note {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎵 Audio Player</h1>
+
+      <div class="file-row">
+        <div class="file-info" id="fileInfo">No audio file selected</div>
+        <button
+          class="open-file"
+          onclick="handleFileButtonClick(event)"
+          style="background: #17a2b8; box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3)">
+          <span class="icon">🎵</span>
+          Load Files
+        </button>
+      </div>
+
+      <div class="controls">
+        <button id="playPauseBtn" onclick="togglePlayPause()" disabled>Play</button>
+
+        <button class="nav-button" onclick="previousSentence()" disabled>Previous</button>
+
+        <button class="nav-button" onclick="nextSentence()" disabled>Next</button>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" onclick="seekAudio(event)">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-display">
+          <span id="currentTime">0:00</span>
+          <span id="duration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Current Text Display -->
+      <div class="current-text" id="currentText" style="display: none">
+        <div class="text-content" id="textContent">
+          Load audio and LRC files together to see synchronized text here.
+        </div>
+      </div>
+
+      <!-- Hidden file inputs -->
+      <input
+        type="file"
+        id="bothFilesInput"
+        accept="*/*"
+        multiple
+        onchange="loadBothFiles(event)" />
+      <audio id="audioPlayer" onended="onAudioEnded()"></audio>
+    </div>
+
+    <script>
+      // Global variables
+      let audioPlayer = document.getElementById('audioPlayer');
+      let playPauseBtn = document.getElementById('playPauseBtn');
+      let progressFill = document.getElementById('progressFill');
+      let currentTimeSpan = document.getElementById('currentTime');
+      let durationSpan = document.getElementById('duration');
+      let statusDiv = document.getElementById('status');
+      let fileInfoDiv = document.getElementById('fileInfo');
+
+      let isPlaying = false;
+      let currentSentenceIndex = 0;
+      let sentences = []; // Will store sentence timestamps detected from silence
+      let currentFileName = '';
+      let audioContext = null;
+      let audioBuffer = null;
+
+      // LRC-related variables
+      let lrcData = []; // Will store parsed LRC subtitle data
+      let currentLrcIndex = -1;
+      let lrcLoaded = false;
+
+      // Initialize event listeners
+      audioPlayer.addEventListener('timeupdate', updateProgress);
+      audioPlayer.addEventListener('loadedmetadata', onAudioLoaded);
+      audioPlayer.addEventListener('play', onPlay);
+      audioPlayer.addEventListener('pause', onPause);
+
+      // Utility function to detect iOS
+      function isIOS() {
+        return (
+          /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+        );
+      }
+
+      function handleFileButtonClick(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Debug logging for iOS Safari
+        if (isIOS()) {
+          console.log('iOS detected, attempting file selection...');
+        }
+
+        openBothFiles();
+      }
+
+      function openBothFiles() {
+        const fileInput = document.getElementById('bothFilesInput');
+
+        if (isIOS()) {
+          // For iOS, we need to ensure the click happens in a user gesture context
+          // Reset the input value to ensure change event fires even for same files
+          fileInput.value = '';
+
+          // Use a timeout to ensure we're still in the user gesture context
+          setTimeout(() => {
+            fileInput.click();
+          }, 0);
+        } else {
+          // For other browsers, direct click usually works
+          try {
+            fileInput.value = ''; // Reset for re-selection of same files
+            fileInput.click();
+          } catch (error) {
+            console.log('Click failed, trying alternative approach:', error);
+            // Fallback - create a new input element
+            const newInput = document.createElement('input');
+            newInput.type = 'file';
+            newInput.accept = fileInput.accept;
+            newInput.multiple = fileInput.multiple;
+            newInput.style.position = 'absolute';
+            newInput.style.left = '-9999px';
+            newInput.onchange = function (event) {
+              loadBothFiles(event);
+              document.body.removeChild(newInput);
+            };
+            document.body.appendChild(newInput);
+            newInput.click();
+          }
+        }
+      }
+
+      /**
+       * Handles loading both audio and LRC files simultaneously
+       * @param {Event} event - File input change event with multiple files
+       */
+      function loadBothFiles(event) {
+        const files = Array.from(event.target.files);
+
+        if (files.length === 0) return;
+
+        let audioFile = null;
+        let lrcFile = null;
+
+        // Separate audio and LRC files
+        files.forEach((file) => {
+          if (file.type.startsWith('audio/')) {
+            audioFile = file;
+          } else if (
+            file.name.toLowerCase().endsWith('.lrc') ||
+            file.name.toLowerCase().endsWith('.txt')
+          ) {
+            lrcFile = file;
+          }
+        });
+
+        // Handle different file combinations gracefully
+        if (audioFile && lrcFile) {
+          // Both files selected - load them together
+          updateStatus('Loading audio and subtitle files...', 'stopped');
+          loadAudioFileInternal(audioFile, () => {
+            loadLrcFileInternal(lrcFile);
+          });
+        } else if (audioFile) {
+          // Only audio file selected - load it normally
+          updateStatus('Loading audio file...', 'stopped');
+          loadAudioFileInternal(audioFile);
+        } else if (lrcFile) {
+          // Only LRC file selected - load it if audio is already loaded
+          if (audioPlayer.src) {
+            loadLrcFileInternal(lrcFile);
+          } else {
+            updateStatus('Load an audio file first, then add subtitles', 'stopped');
+          }
+        }
+
+        // Reset the input
+        event.target.value = '';
+      }
+
+      /**
+       * Attempts to automatically find and load a matching LRC file
+       * @param {File} audioFile - The loaded audio file
+       */
+      function tryAutoLoadLrc(audioFile) {
+        // This would require additional file system access which browsers don't allow
+        // But we can show a helpful message
+        const baseName = audioFile.name.replace(/\.[^/.]+$/, ''); // Remove extension
+        updateStatus(
+          `Audio loaded. To add subtitles, look for "${baseName}.lrc" and load it using the LRC button below.`,
+          'stopped'
+        );
+      }
+
+      /**
+       * Internal function to load audio file with optional callback
+       * @param {File} file - Audio file to load
+       * @param {Function} callback - Optional callback after loading
+       */
+      function loadAudioFileInternal(file, callback) {
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('audio/')) {
+          updateStatus('Please select a valid audio file', 'stopped');
+          return;
+        }
+
+        // Clean up previous blob URL to prevent memory leaks
+        if (audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioPlayer.src);
+        }
+
+        currentFileName = file.name;
+        const url = URL.createObjectURL(file);
+        audioPlayer.src = url;
+
+        fileInfoDiv.innerHTML = `
+                  <strong>📄 ${currentFileName}</strong>
+              `;
+
+        if (!callback) {
+          updateStatus('Loading audio file...', 'stopped');
+        }
+
+        // Reset player state
+        isPlaying = false;
+        currentSentenceIndex = 0;
+        progressFill.style.width = '0%';
+        currentTimeSpan.textContent = '0:00';
+
+        // Enable controls when metadata is loaded
+        audioPlayer.addEventListener('loadedmetadata', async function onMetadataLoaded() {
+          enableControls();
+
+          if (!callback) {
+            updateStatus('Audio file ready to play', 'stopped');
+          }
+
+          // Perform silence detection to find sentence boundaries
+          await detectSilenceBoundaries(file);
+
+          // Call callback if provided
+          if (callback) {
+            callback();
+          }
+
+          // Remove this specific listener to prevent multiple bindings
+          audioPlayer.removeEventListener('loadedmetadata', onMetadataLoaded);
+        });
+
+        // Handle loading errors
+        audioPlayer.addEventListener('error', function onError() {
+          updateStatus('Error loading audio file', 'stopped');
+          disableControls();
+          audioPlayer.removeEventListener('error', onError);
+        });
+      }
+
+      // ================================
+      // LRC FILE HANDLING FUNCTIONS
+      // ================================
+
+      /**
+       * Loads and parses LRC subtitle file
+       * @param {Event} event - File input change event
+       */
+      function loadLrcFile(event) {
+        const file = event.target.files[0];
+        if (file) {
+          loadLrcFileInternal(file);
+        }
+      }
+
+      /**
+       * Internal function to load LRC file
+       * @param {File} file - LRC file to load
+       */
+      function loadLrcFileInternal(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            lrcData = parseLrcContent(e.target.result);
+            lrcLoaded = true;
+
+            document.getElementById('currentText').style.display = 'block';
+
+            updateStatus(
+              `Audio and subtitles ready! Found ${lrcData.length} subtitle lines.`,
+              'stopped'
+            );
+
+            // Update text display if audio is playing
+            if (audioPlayer.currentTime > 0) {
+              updateCurrentText(audioPlayer.currentTime);
+            }
+          } catch (error) {
+            console.error('Error parsing LRC file:', error);
+            updateStatus('Error parsing LRC file - please check format', 'stopped');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      /**
+       * Parses LRC file content into structured data
+       * @param {string} content - Raw LRC file content
+       * @returns {Array} Array of {time, text} objects
+       */
+      function parseLrcContent(content) {
+        const lines = content.split('\n');
+        const lrcEntries = [];
+
+        lines.forEach((line) => {
+          // Match LRC format: [mm:ss.xx] or [mm:ss] text
+          const match = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\](.+)/);
+          if (match) {
+            const minutes = parseInt(match[1]);
+            const seconds = parseInt(match[2]);
+            const centiseconds = parseInt(match[3] || '0');
+            const text = match[4].trim();
+
+            const timeInSeconds = minutes * 60 + seconds + centiseconds / 100;
+
+            if (text) {
+              // Only add non-empty text lines
+              lrcEntries.push({
+                time: timeInSeconds,
+                text: text,
+              });
+            }
+          }
+        });
+
+        // Sort by time to ensure proper order
+        return lrcEntries.sort((a, b) => a.time - b.time);
+      }
+
+      /**
+       * Updates the current text display based on audio time
+       * @param {number} currentTime - Current audio playback time
+       */
+      function updateCurrentText(currentTime) {
+        if (!lrcLoaded || lrcData.length === 0) {
+          return;
+        }
+
+        let activeIndex = -1;
+
+        // Find the current subtitle line
+        for (let i = 0; i < lrcData.length; i++) {
+          if (currentTime >= lrcData[i].time) {
+            activeIndex = i;
+          } else {
+            break;
+          }
+        }
+
+        const textContent = document.getElementById('textContent');
+
+        if (activeIndex !== -1 && activeIndex !== currentLrcIndex) {
+          currentLrcIndex = activeIndex;
+          textContent.textContent = lrcData[activeIndex].text;
+          textContent.className = 'text-content highlighted';
+
+          // Remove highlight after animation
+          setTimeout(() => {
+            textContent.className = 'text-content';
+          }, 300);
+        } else if (activeIndex === -1) {
+          textContent.textContent = 'Waiting for subtitles...';
+          textContent.className = 'text-content';
+        }
+      }
+
+      function enableControls() {
+        const buttons = document.querySelectorAll(
+          'button:not([onclick*="openBothFiles"]):not([onclick*="openLrcFile"])'
+        );
+        buttons.forEach((btn) => (btn.disabled = false));
+      }
+
+      function disableControls() {
+        const buttons = document.querySelectorAll(
+          'button:not([onclick*="openBothFiles"]):not([onclick*="openLrcFile"])'
+        );
+        buttons.forEach((btn) => (btn.disabled = true));
+      }
+
+      function togglePlayPause() {
+        if (isPlaying) {
+          pause();
+        } else {
+          play();
+        }
+      }
+
+      function play() {
+        if (audioPlayer.src) {
+          audioPlayer.play().catch((error) => {
+            console.error('Error playing audio:', error);
+            updateStatus('Error playing audio - please try again', 'stopped');
+          });
+        }
+      }
+
+      function pause() {
+        if (audioPlayer.src) {
+          audioPlayer.pause();
+        }
+      }
+
+      function onPlay() {
+        isPlaying = true;
+        playPauseBtn.innerHTML = 'Pause';
+        updateStatus('Playing', 'playing');
+      }
+
+      function onPause() {
+        isPlaying = false;
+        playPauseBtn.innerHTML = 'Play';
+        updateStatus('Paused', 'paused');
+      }
+
+      function onAudioEnded() {
+        isPlaying = false;
+        playPauseBtn.innerHTML = 'Play';
+        updateStatus('Finished', 'stopped');
+        progressFill.style.width = '100%';
+      }
+
+      function onAudioLoaded() {
+        durationSpan.textContent = formatTime(audioPlayer.duration);
+      }
+
+      function updateProgress() {
+        if (audioPlayer.duration && !isNaN(audioPlayer.duration)) {
+          const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+          progressFill.style.width = Math.min(100, Math.max(0, progress)) + '%';
+          currentTimeSpan.textContent = formatTime(audioPlayer.currentTime);
+
+          // Update duration if it wasn't set properly before
+          if (durationSpan.textContent === '0:00') {
+            durationSpan.textContent = formatTime(audioPlayer.duration);
+          }
+
+          // Update LRC text display
+          updateCurrentText(audioPlayer.currentTime);
+        }
+      }
+
+      function seekAudio(event) {
+        if (audioPlayer.duration) {
+          const progressBar = event.currentTarget;
+          const rect = progressBar.getBoundingClientRect();
+          const clickX = event.clientX - rect.left;
+          const progressBarWidth = rect.width;
+          const seekTime = (clickX / progressBarWidth) * audioPlayer.duration;
+          audioPlayer.currentTime = seekTime;
+        }
+      }
+
+      function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      function updateStatus(message, type) {
+        if (statusDiv) {
+          statusDiv.textContent = message;
+          statusDiv.className = 'status ' + type;
+        }
+      }
+
+      function generateMockSentences() {
+        // This function is now replaced by detectSilenceBoundaries
+        // But keeping as fallback if silence detection fails
+        sentences = [];
+        if (audioPlayer.duration) {
+          for (let i = 0; i < audioPlayer.duration; i += 12 + Math.random() * 6) {
+            sentences.push({
+              start: i,
+              end: Math.min(i + 8 + Math.random() * 4, audioPlayer.duration),
+            });
+          }
+        }
+        currentSentenceIndex = 0;
+      }
+
+      async function detectSilenceBoundaries(file) {
+        try {
+          updateStatus('Analyzing audio for sentence boundaries...', 'stopped');
+
+          // Initialize AudioContext if not already done
+          if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          }
+
+          // Read file as ArrayBuffer
+          const arrayBuffer = await file.arrayBuffer();
+
+          // Decode audio data
+          audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+          // Analyze audio for silence boundaries
+          const silenceBoundaries = analyzeSilence(audioBuffer);
+
+          // Convert silence boundaries to sentence segments
+          sentences = createSentenceSegments(silenceBoundaries, audioBuffer.duration);
+
+          currentSentenceIndex = 0;
+
+          updateStatus(`Found ${sentences.length} sentence segments`, 'stopped');
+
+          // Visualize segments on progress bar
+          setTimeout(() => visualizeSegments(), 100); // Small delay to ensure audio duration is available
+
+          return sentences;
+        } catch (error) {
+          console.error('Error in silence detection:', error);
+          updateStatus('Silence detection failed, using fallback segments', 'stopped');
+          // Fall back to mock sentences
+          generateMockSentences();
+          return sentences;
+        }
+      }
+
+      function analyzeSilence(audioBuffer) {
+        const frameSize = Math.floor(audioBuffer.sampleRate * 0.1); // 100ms frames
+        const silenceThreshold = 0.02; // Amplitude threshold for silence
+        const minSilenceDuration = 0.3; // 300ms minimum silence duration
+        const minSilenceFrames = Math.floor(minSilenceDuration / 0.1);
+
+        const channelData = audioBuffer.getChannelData(0); // Use first channel
+        const silenceBoundaries = [];
+
+        let silenceFrameCount = 0;
+        let silenceStartTime = 0;
+        let inSilence = false;
+
+        // Analyze audio in 100ms frames
+        for (let i = 0; i < channelData.length; i += frameSize) {
+          const frameEnd = Math.min(i + frameSize, channelData.length);
+
+          // Calculate RMS amplitude for this frame
+          let sumSquares = 0;
+          for (let j = i; j < frameEnd; j++) {
+            sumSquares += channelData[j] * channelData[j];
+          }
+          const rms = Math.sqrt(sumSquares / (frameEnd - i));
+
+          const currentTime = i / audioBuffer.sampleRate;
+
+          if (rms < silenceThreshold) {
+            // This frame is silent
+            if (!inSilence) {
+              // Start of silence
+              inSilence = true;
+              silenceStartTime = currentTime;
+              silenceFrameCount = 1;
+            } else {
+              silenceFrameCount++;
+            }
+          } else {
+            // This frame is not silent
+            if (inSilence && silenceFrameCount >= minSilenceFrames) {
+              // End of significant silence period
+              silenceBoundaries.push({
+                start: silenceStartTime,
+                end: currentTime,
+              });
+            }
+            inSilence = false;
+            silenceFrameCount = 0;
+          }
+        }
+
+        // Handle silence at the end of the audio
+        if (inSilence && silenceFrameCount >= minSilenceFrames) {
+          silenceBoundaries.push({
+            start: silenceStartTime,
+            end: audioBuffer.duration,
+          });
+        }
+
+        return silenceBoundaries;
+      }
+
+      function createSentenceSegments(silenceBoundaries, totalDuration) {
+        const segments = [];
+        let lastEnd = 0;
+
+        // Create segments between silence periods
+        for (const silence of silenceBoundaries) {
+          if (silence.start - lastEnd > 1.0) {
+            // Only create segments > 1 second
+            segments.push({
+              start: lastEnd,
+              end: silence.start,
+            });
+          }
+          lastEnd = silence.end;
+        }
+
+        // Add final segment if there's significant audio after the last silence
+        if (totalDuration - lastEnd > 1.0) {
+          segments.push({
+            start: lastEnd,
+            end: totalDuration,
+          });
+        }
+
+        // If no segments found, create one segment for the entire audio
+        if (segments.length === 0) {
+          segments.push({
+            start: 0,
+            end: totalDuration,
+          });
+        }
+
+        return segments;
+      }
+
+      function visualizeSegments() {
+        const progressBar = document.querySelector('.progress-bar');
+
+        // Remove existing markers
+        const existingMarkers = progressBar.querySelectorAll('.segment-marker');
+        existingMarkers.forEach((marker) => marker.remove());
+
+        if (sentences.length > 0 && audioPlayer.duration) {
+          sentences.forEach((segment, index) => {
+            const marker = document.createElement('div');
+            marker.className = 'segment-marker';
+            if (index === currentSentenceIndex) {
+              marker.className += ' current-segment-marker';
+            }
+
+            const position = (segment.start / audioPlayer.duration) * 100;
+            marker.style.left = position + '%';
+
+            // Add tooltip with segment info
+            marker.title = `Segment ${index + 1}: ${formatTime(
+              segment.start
+            )} - ${formatTime(segment.end)}`;
+
+            progressBar.appendChild(marker);
+          });
+        }
+      }
+
+      function updateCurrentSegmentMarker() {
+        const markers = document.querySelectorAll('.segment-marker');
+
+        markers.forEach((marker, index) => {
+          if (index === currentSentenceIndex) {
+            marker.className = 'segment-marker current-segment-marker';
+          } else {
+            marker.className = 'segment-marker';
+          }
+        });
+      }
+
+      function previousSentence() {
+        if (sentences.length === 0) {
+          // If no sentences defined, go back 10 seconds
+          audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+          updateStatus('Skipped back 10 seconds', isPlaying ? 'playing' : 'paused');
+          return;
+        }
+
+        // Find the appropriate previous segment
+        let targetIndex = currentSentenceIndex - 1;
+
+        // If we're at the beginning of the current segment, go to previous segment
+        // If we're in the middle, go to the beginning of current segment
+        if (audioPlayer.currentTime - sentences[currentSentenceIndex].start > 2.0) {
+          // If more than 2 seconds into current segment, restart current segment
+          targetIndex = currentSentenceIndex;
+        }
+
+        if (targetIndex >= 0) {
+          currentSentenceIndex = targetIndex;
+          audioPlayer.currentTime = sentences[currentSentenceIndex].start;
+          updateCurrentSegmentMarker();
+          const duration =
+            sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
+          updateStatus(
+            `Segment ${currentSentenceIndex + 1}/${sentences.length} (${formatTime(
+              duration
+            )})`,
+            isPlaying ? 'playing' : 'paused'
+          );
+        } else {
+          // Go to beginning of audio
+          currentSentenceIndex = 0;
+          audioPlayer.currentTime = 0;
+          updateCurrentSegmentMarker();
+          updateStatus('Beginning of audio', isPlaying ? 'playing' : 'paused');
+        }
+      }
+
+      function nextSentence() {
+        if (sentences.length === 0) {
+          // If no sentences defined, go forward 10 seconds
+          audioPlayer.currentTime = Math.min(
+            audioPlayer.duration,
+            audioPlayer.currentTime + 10
+          );
+          updateStatus('Skipped forward 10 seconds', isPlaying ? 'playing' : 'paused');
+          return;
+        }
+
+        if (currentSentenceIndex < sentences.length - 1) {
+          currentSentenceIndex++;
+          audioPlayer.currentTime = sentences[currentSentenceIndex].start;
+          updateCurrentSegmentMarker();
+          const duration =
+            sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
+          updateStatus(
+            `Segment ${currentSentenceIndex + 1}/${sentences.length} (${formatTime(
+              duration
+            )})`,
+            isPlaying ? 'playing' : 'paused'
+          );
+        } else {
+          // Go to end of audio or last segment end
+          if (sentences[currentSentenceIndex]) {
+            audioPlayer.currentTime = sentences[currentSentenceIndex].end - 0.1; // Slightly before end
+          }
+          updateStatus('End of audio', isPlaying ? 'playing' : 'paused');
+        }
+      }
+
+      // Update current sentence index based on current time
+      audioPlayer.addEventListener('timeupdate', () => {
+        if (sentences.length > 0) {
+          for (let i = 0; i < sentences.length; i++) {
+            if (
+              audioPlayer.currentTime >= sentences[i].start &&
+              audioPlayer.currentTime <= sentences[i].end
+            ) {
+              if (currentSentenceIndex !== i) {
+                currentSentenceIndex = i;
+                updateCurrentSegmentMarker();
+
+                // Note: Removed automatic status updates during playback for cleaner UI
+              }
+              break;
+            }
+          }
+        }
+      });
+
+      // ================================
+      // KEYBOARD SHORTCUTS & HELP
+      // ================================
+
+      /**
+       * Enhanced keyboard shortcuts for better usability
+       */
+      document.addEventListener('keydown', (e) => {
+        // Only handle shortcuts if audio is loaded and no input is focused
+        if (audioPlayer.src && !isInputFocused()) {
+          switch (e.code) {
+            case 'Space':
+              e.preventDefault();
+              togglePlayPause();
+              break;
+            case 'ArrowLeft':
+              e.preventDefault();
+              previousSentence();
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              nextSentence();
+              break;
+            case 'KeyJ':
+              e.preventDefault();
+              // Jump back 10 seconds
+              audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+              updateStatus('Jumped back 10 seconds', isPlaying ? 'playing' : 'paused');
+              break;
+            case 'KeyL':
+              e.preventDefault();
+              // Jump forward 10 seconds
+              audioPlayer.currentTime = Math.min(
+                audioPlayer.duration,
+                audioPlayer.currentTime + 10
+              );
+              updateStatus('Jumped forward 10 seconds', isPlaying ? 'playing' : 'paused');
+              break;
+            case 'KeyO':
+              e.preventDefault();
+              openBothFiles();
+              break;
+            case 'KeyS':
+              e.preventDefault();
+              if (e.ctrlKey || e.metaKey) {
+                return; // Allow browser save
+              }
+              openLrcFile();
+              break;
+            case 'KeyH':
+            case 'F1':
+              e.preventDefault();
+              showHelp();
+              break;
+            case 'Escape':
+              e.preventDefault();
+              hideHelp();
+              break;
+          }
+        }
+      });
+
+      /**
+       * Check if any input element is currently focused
+       */
+      function isInputFocused() {
+        const activeElement = document.activeElement;
+        return (
+          activeElement &&
+          (activeElement.tagName === 'INPUT' ||
+            activeElement.tagName === 'TEXTAREA' ||
+            activeElement.contentEditable === 'true')
+        );
+      }
+
+      /**
+       * Show keyboard shortcuts help overlay
+       */
+      function showHelp() {
+        let helpOverlay = document.getElementById('helpOverlay');
+
+        if (!helpOverlay) {
+          helpOverlay = document.createElement('div');
+          helpOverlay.id = 'helpOverlay';
+          helpOverlay.innerHTML = `
+            <div class="help-content">
+              <h3>⌨️ Keyboard Shortcuts</h3>
+              <div class="shortcut-list">
+                <div><kbd>Space</kbd> Play / Pause</div>
+                <div><kbd>←</kbd> Previous Segment</div>
+                <div><kbd>→</kbd> Next Segment</div>
+                <div><kbd>J</kbd> Jump Back 10s</div>
+                <div><kbd>L</kbd> Jump Forward 10s</div>
+                <div><kbd>O</kbd> Load Files</div>
+                <div><kbd>S</kbd> Load LRC Subtitles</div>
+                <div><kbd>H</kbd> Show This Help</div>
+                <div><kbd>Esc</kbd> Close Help</div>
+              </div>
+              <p class="help-note">💡 Click anywhere or press Esc to close</p>
+            </div>
+          `;
+
+          helpOverlay.onclick = hideHelp;
+          document.body.appendChild(helpOverlay);
+        }
+
+        helpOverlay.style.display = 'flex';
+        setTimeout(() => helpOverlay.classList.add('show'), 10);
+      }
+
+      /**
+       * Hide keyboard shortcuts help overlay
+       */
+      function hideHelp() {
+        const helpOverlay = document.getElementById('helpOverlay');
+        if (helpOverlay) {
+          helpOverlay.classList.remove('show');
+          setTimeout(() => (helpOverlay.style.display = 'none'), 300);
+        }
+      }
+
+      // Initial status
+      updateStatus('Select an audio file to begin', 'stopped');
+
+      // Register Service Worker for PWA functionality
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // Create a simple service worker inline
+          const swCode = `
+            const CACHE_NAME = 'audio-player-v1';
+            const urlsToCache = [
+              './',
+              './index.html'
+            ];
+
+            self.addEventListener('install', event => {
+              event.waitUntil(
+                caches.open(CACHE_NAME)
+                  .then(cache => cache.addAll(urlsToCache))
+              );
+            });
+
+            self.addEventListener('fetch', event => {
+              event.respondWith(
+                caches.match(event.request)
+                  .then(response => {
+                    if (response) {
+                      return response;
+                    }
+                    return fetch(event.request);
+                  })
+              );
+            });
+          `;
+
+          const blob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(blob);
+
+          navigator.serviceWorker
+            .register(swUrl)
+            .then((registration) => {
+              console.log('Service Worker registered:', registration);
+            })
+            .catch((error) => {
+              console.log('Service Worker registration failed:', error);
+            });
+        });
+      }
+
+      // Cleanup blob URLs when page unloads to prevent memory leaks
+      window.addEventListener('beforeunload', () => {
+        if (audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioPlayer.src);
+        }
+      });
+    </script>
+  </body>
+</html>
