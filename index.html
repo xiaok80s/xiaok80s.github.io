@@ -110,12 +110,14 @@
 
       button:hover {
         background: #357abd;
-        transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
       }
 
-      button:active {
-        transform: translateY(0);
+      /* Keep hover transform effect only on devices that support hover (desktop) */
+      @media (hover: hover) and (pointer: fine) {
+        button:hover {
+          transform: translateY(-2px);
+        }
       }
 
       /* iOS Safari touch handling */
@@ -157,6 +159,16 @@
       .nav-button:hover {
         background: #5a6268;
         box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+      }
+
+      #repeatBtn {
+        background: #fd7e14;
+        box-shadow: 0 4px 15px rgba(253, 126, 20, 0.3);
+      }
+
+      #repeatBtn:hover {
+        background: #e8690a;
+        box-shadow: 0 6px 20px rgba(253, 126, 20, 0.4);
       }
 
       .lyrics-toggle-container {
@@ -206,6 +218,13 @@
 
       .lyrics-toggle.active .toggle-icon {
         transform: rotate(180deg);
+      }
+
+      /* Desktop-only hover transform effects */
+      @media (hover: hover) and (pointer: fine) {
+        button:active {
+          transform: translateY(0);
+        }
       }
 
       .progress-container {
@@ -367,11 +386,11 @@
         }
 
         .nav-button {
-          flex: 0 0 auto;
-          min-width: 60px;
+          flex: 1;
+          min-width: 0;
         }
 
-        #playPauseBtn {
+        #repeatBtn {
           flex: 1;
           min-width: 0;
         }
@@ -433,7 +452,13 @@
         }
 
         .nav-button {
-          min-width: 55px;
+          flex: 1;
+          min-width: 0;
+        }
+
+        #repeatBtn {
+          flex: 1;
+          min-width: 0;
         }
 
         .lyrics-toggle-container {
@@ -569,11 +594,13 @@
       </div>
 
       <div class="controls">
-        <button id="playPauseBtn" onclick="togglePlayPause()" disabled>Play</button>
+        <button class="nav-button" onclick="playPreviousSentence()" disabled>
+          Previous
+        </button>
 
-        <button class="nav-button" onclick="previousSentence()" disabled>Previous</button>
+        <button id="repeatBtn" onclick="repeatCurrentSentence()" disabled>Repeat</button>
 
-        <button class="nav-button" onclick="nextSentence()" disabled>Next</button>
+        <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
       </div>
 
       <!-- Lyrics Toggle -->
@@ -614,7 +641,7 @@
     <script>
       // Global variables
       let audioPlayer = document.getElementById('audioPlayer');
-      let playPauseBtn = document.getElementById('playPauseBtn');
+      let repeatBtn = document.getElementById('repeatBtn');
       let progressFill = document.getElementById('progressFill');
       let currentTimeSpan = document.getElementById('currentTime');
       let durationSpan = document.getElementById('duration');
@@ -805,9 +832,6 @@
         document.getElementById('currentText').style.display = 'none';
         updateLyricsToggleVisibility();
 
-        // Reset play button text to ensure it shows "Play" when loading new file
-        playPauseBtn.innerHTML = 'Play';
-
         // Enable controls when metadata is loaded
         audioPlayer.addEventListener('loadedmetadata', async function onMetadataLoaded() {
           enableControls();
@@ -867,17 +891,17 @@
             // Show lyrics toggle button
             updateLyricsToggleVisibility();
 
-            // Show lyrics by default when LRC is loaded
-            lyricsVisible = true;
-            document.getElementById('currentText').style.display = 'flex';
+            // Hide lyrics by default when LRC is loaded
+            lyricsVisible = false;
+            document.getElementById('currentText').style.display = 'none';
 
-            // Update toggle button state
+            // Update toggle button state to show "Show Lyrics"
             const toggleBtn = document.getElementById('lyricsToggleBtn');
             const toggleText = document.getElementById('lyricsToggleText');
             const toggleIcon = toggleBtn.querySelector('.toggle-icon');
-            toggleBtn.classList.add('active');
-            toggleText.textContent = 'Hide Lyrics';
-            toggleIcon.textContent = '🙈';
+            toggleBtn.classList.remove('active');
+            toggleText.textContent = 'Show Lyrics';
+            toggleIcon.textContent = '👁️';
 
             // Generate sentence boundaries from LRC data
             generateSentencesFromLrc();
@@ -1016,44 +1040,18 @@
         buttons.forEach((btn) => (btn.disabled = true));
       }
 
-      function togglePlayPause() {
-        if (isPlaying) {
-          pause();
-        } else {
-          play();
-        }
-      }
-
-      function play() {
-        if (audioPlayer.src) {
-          audioPlayer.play().catch((error) => {
-            console.error('Error playing audio:', error);
-            updateStatus('Error playing audio - please try again', 'stopped');
-          });
-        }
-      }
-
-      function pause() {
-        if (audioPlayer.src) {
-          audioPlayer.pause();
-        }
-      }
-
       function onPlay() {
         isPlaying = true;
-        playPauseBtn.innerHTML = 'Pause';
         updateStatus('Playing', 'playing');
       }
 
       function onPause() {
         isPlaying = false;
-        playPauseBtn.innerHTML = 'Play';
         updateStatus('Paused', 'paused');
       }
 
       function onAudioEnded() {
         isPlaying = false;
-        playPauseBtn.innerHTML = 'Play';
         updateStatus('Finished', 'stopped');
         progressFill.style.width = '100%';
       }
@@ -1360,6 +1358,61 @@
         });
       }
 
+      // ================================
+      // SENTENCE PLAYBACK FUNCTIONS
+      // ================================
+
+      function playPreviousSentence() {
+        previousSentence();
+        // Auto-play the selected sentence
+        if (audioPlayer.src && sentences.length > 0) {
+          audioPlayer.play().catch((error) => {
+            console.error('Error playing audio:', error);
+          });
+        }
+      }
+
+      function playNextSentence() {
+        nextSentence();
+        // Auto-play the selected sentence
+        if (audioPlayer.src && sentences.length > 0) {
+          audioPlayer.play().catch((error) => {
+            console.error('Error playing audio:', error);
+          });
+        }
+      }
+
+      function repeatCurrentSentence() {
+        if (sentences.length === 0) {
+          // If no sentences defined, restart from current position
+          if (audioPlayer.src) {
+            audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 3);
+            audioPlayer.play().catch((error) => {
+              console.error('Error playing audio:', error);
+            });
+            updateStatus('Repeating current section', 'playing');
+          }
+          return;
+        }
+
+        // Go to the start of current sentence and play
+        if (currentSentenceIndex >= 0 && currentSentenceIndex < sentences.length) {
+          audioPlayer.currentTime = sentences[currentSentenceIndex].start;
+          audioPlayer.play().catch((error) => {
+            console.error('Error playing audio:', error);
+          });
+          updateCurrentSegmentMarker();
+          const duration =
+            sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
+          updateStatus(
+            `Repeating sentence ${currentSentenceIndex + 1}/${
+              sentences.length
+            } (${formatTime(duration)})`,
+            'playing'
+          );
+        }
+      }
+
       function previousSentence() {
         if (sentences.length === 0) {
           // If no sentences defined, go back 10 seconds
@@ -1484,17 +1537,32 @@
         // Handle shortcuts that require audio to be loaded
         if (audioPlayer.src) {
           switch (e.code) {
-            case 'KeyK':
+            case 'Space':
               e.preventDefault();
-              togglePlayPause();
+              repeatCurrentSentence();
+              break;
+            case 'ArrowLeft':
+              e.preventDefault();
+              playPreviousSentence();
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              playNextSentence();
               break;
             case 'KeyJ':
               e.preventDefault();
-              previousSentence();
+              // Jump back 10 seconds
+              audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+              updateStatus('Jumped back 10 seconds', isPlaying ? 'playing' : 'paused');
               break;
             case 'KeyL':
               e.preventDefault();
-              nextSentence();
+              // Jump forward 10 seconds
+              audioPlayer.currentTime = Math.min(
+                audioPlayer.duration,
+                audioPlayer.currentTime + 10
+              );
+              updateStatus('Jumped forward 10 seconds', isPlaying ? 'playing' : 'paused');
               break;
             case 'KeyS':
               e.preventDefault();
@@ -1554,9 +1622,9 @@
             <div class="help-content">
               <h3>⌨️ Keyboard Shortcuts</h3>
               <div class="shortcut-list">
-                <div><kbd>Space</kbd> Play / Pause</div>
-                <div><kbd>←</kbd> Previous Segment</div>
-                <div><kbd>→</kbd> Next Segment</div>
+                <div><kbd>Space</kbd> Repeat Current</div>
+                <div><kbd>←</kbd> Play Previous</div>
+                <div><kbd>→</kbd> Play Next</div>
                 <div><kbd>J</kbd> Jump Back 10s</div>
                 <div><kbd>L</kbd> Jump Forward 10s</div>
                 <div><kbd>O</kbd> Load Files</div>
