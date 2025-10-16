@@ -41,6 +41,15 @@
         justify-content: center;
         align-items: center;
         padding: 20px;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
       }
 
       .container {
@@ -51,6 +60,17 @@
         text-align: center;
         max-width: 500px;
         width: 100%;
+        position: relative;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        pointer-events: auto;
+        touch-action: manipulation;
       }
 
       h1 {
@@ -264,9 +284,53 @@
       .time-display {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         margin-top: 10px;
         font-size: 0.9rem;
         color: #666;
+      }
+
+      .speed-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .speed-btn {
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+      }
+
+      .speed-btn:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+      }
+
+      .speed-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .speed-display {
+        font-size: 0.8rem;
+        color: #666;
+        min-width: 35px;
+        text-align: center;
       }
 
       .icon {
@@ -590,13 +654,13 @@
       </div>
 
       <div class="controls">
-        <button class="nav-button" onclick="playPreviousSentence()" disabled>
-          Previous
-        </button>
+        <button id="playPauseBtn" onclick="togglePlayPause()" disabled>Play</button>
 
         <button id="repeatBtn" onclick="repeatCurrentSentence()" disabled>Repeat</button>
 
-        <button id="pauseBtn" onclick="pauseAudio()" disabled>Pause</button>
+        <button class="nav-button" onclick="playPreviousSentence()" disabled>
+          Previous
+        </button>
 
         <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
       </div>
@@ -615,6 +679,33 @@
         </div>
         <div class="time-display">
           <span id="currentTime">0:00</span>
+          <div class="speed-controls">
+            <button
+              class="speed-btn"
+              id="speedDownBtn"
+              onclick="decreaseSpeed()"
+              disabled
+              title="Decrease Speed">
+              −
+            </button>
+            <span class="speed-display" id="speedDisplay">1.0x</span>
+            <button
+              class="speed-btn"
+              id="speedResetBtn"
+              onclick="resetSpeed()"
+              disabled
+              title="Reset Speed">
+              ○
+            </button>
+            <button
+              class="speed-btn"
+              id="speedUpBtn"
+              onclick="increaseSpeed()"
+              disabled
+              title="Increase Speed">
+              +
+            </button>
+          </div>
           <span id="duration">0:00</span>
         </div>
       </div>
@@ -633,7 +724,7 @@
         accept="*/*"
         multiple
         onchange="loadBothFiles(event)" />
-      <audio id="audioPlayer" onended="onAudioEnded()"></audio>
+      <audio id="audioPlayer" onended="onAudioEnded()" loop></audio>
     </div>
 
     <script>
@@ -729,6 +820,12 @@
           progressFill.style.width = '0%';
         }
 
+        // Reset speed controls
+        const speedDisplay = document.getElementById('speedDisplay');
+        if (speedDisplay) {
+          speedDisplay.textContent = '1.0x';
+        }
+
         // Clear lyrics display
         const lyricsContainer = document.getElementById('lyricsDisplay');
         if (lyricsContainer) {
@@ -763,9 +860,10 @@
           repeatBtn.disabled = true;
         }
 
-        const pauseBtn = document.getElementById('pauseBtn');
-        if (pauseBtn) {
-          pauseBtn.disabled = true;
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        if (playPauseBtn) {
+          playPauseBtn.disabled = true;
+          playPauseBtn.textContent = 'Play';
         }
 
         // Clean up audio context
@@ -901,6 +999,8 @@
         currentFileName = file.name;
         const url = URL.createObjectURL(file);
         audioPlayer.src = url;
+        audioPlayer.loop = true; // Enable continuous looping
+        audioPlayer.playbackRate = 1.0; // Reset playback speed
 
         fileInfoDiv.innerHTML = `
                   <strong>📄 ${currentFileName}</strong>
@@ -929,6 +1029,7 @@
         // Enable controls when metadata is loaded
         audioPlayer.addEventListener('loadedmetadata', async function onMetadataLoaded() {
           enableControls();
+          updateSpeedDisplay(); // Initialize speed display
 
           if (!callback) {
             updateStatus('Audio file ready to play', 'stopped');
@@ -940,6 +1041,15 @@
           // Call callback if provided
           if (callback) {
             callback();
+          }
+
+          // Auto-play the audio once it's loaded and processed
+          try {
+            await audioPlayer.play();
+            updateStatus('Auto-playing audio...', 'playing');
+          } catch (error) {
+            console.log('Auto-play prevented by browser policy:', error);
+            updateStatus('Audio ready to play (click Play to start)', 'stopped');
           }
 
           // Remove this specific listener to prevent multiple bindings
@@ -1137,17 +1247,78 @@
       function onPlay() {
         isPlaying = true;
         updateStatus('Playing', 'playing');
+        updatePlayPauseButton();
       }
 
       function onPause() {
         isPlaying = false;
         updateStatus('Paused', 'paused');
+        updatePlayPauseButton();
       }
 
-      function pauseAudio() {
-        if (audioPlayer && !audioPlayer.paused) {
-          audioPlayer.pause();
-          console.log('Audio paused by user');
+      function togglePlayPause() {
+        if (audioPlayer && audioPlayer.src) {
+          if (audioPlayer.paused) {
+            audioPlayer.play().catch((error) => {
+              console.error('Error playing audio:', error);
+            });
+          } else {
+            audioPlayer.pause();
+          }
+        }
+      }
+
+      function updatePlayPauseButton() {
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        if (playPauseBtn) {
+          if (audioPlayer && !audioPlayer.paused && !audioPlayer.ended) {
+            playPauseBtn.textContent = 'Pause';
+          } else {
+            playPauseBtn.textContent = 'Play';
+          }
+        }
+      }
+
+      // ================================
+      // PLAYBACK SPEED CONTROL FUNCTIONS
+      // ================================
+
+      function decreaseSpeed() {
+        if (audioPlayer && audioPlayer.src) {
+          const newSpeed = Math.max(0.1, audioPlayer.playbackRate - 0.1);
+          audioPlayer.playbackRate = newSpeed;
+          updateSpeedDisplay();
+          updateStatus(
+            `Speed: ${newSpeed.toFixed(1)}x`,
+            isPlaying ? 'playing' : 'paused'
+          );
+        }
+      }
+
+      function increaseSpeed() {
+        if (audioPlayer && audioPlayer.src) {
+          const newSpeed = Math.min(3.0, audioPlayer.playbackRate + 0.1);
+          audioPlayer.playbackRate = newSpeed;
+          updateSpeedDisplay();
+          updateStatus(
+            `Speed: ${newSpeed.toFixed(1)}x`,
+            isPlaying ? 'playing' : 'paused'
+          );
+        }
+      }
+
+      function resetSpeed() {
+        if (audioPlayer && audioPlayer.src) {
+          audioPlayer.playbackRate = 1.0;
+          updateSpeedDisplay();
+          updateStatus('Speed reset to 1.0x', isPlaying ? 'playing' : 'paused');
+        }
+      }
+
+      function updateSpeedDisplay() {
+        const speedDisplay = document.getElementById('speedDisplay');
+        if (speedDisplay && audioPlayer) {
+          speedDisplay.textContent = `${audioPlayer.playbackRate.toFixed(1)}x`;
         }
       }
 
@@ -1155,6 +1326,7 @@
         isPlaying = false;
         updateStatus('Finished', 'stopped');
         progressFill.style.width = '100%';
+        updatePlayPauseButton();
       }
 
       function onAudioLoaded() {
@@ -1642,32 +1814,33 @@
               e.preventDefault();
               repeatCurrentSentence();
               break;
-            case 'ArrowLeft':
+            case 'KeyJ':
               e.preventDefault();
               playPreviousSentence();
               break;
-            case 'ArrowRight':
+            case 'KeyL':
               e.preventDefault();
               playNextSentence();
               break;
-            case 'KeyJ':
+            case 'KeyK':
               e.preventDefault();
-              // Jump back 10 seconds
-              audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
-              updateStatus('Jumped back 10 seconds', isPlaying ? 'playing' : 'paused');
+              togglePlayPause();
               break;
-            case 'KeyL':
+            case 'KeyI':
               e.preventDefault();
-              // Jump forward 10 seconds
-              audioPlayer.currentTime = Math.min(
-                audioPlayer.duration,
-                audioPlayer.currentTime + 10
-              );
-              updateStatus('Jumped forward 10 seconds', isPlaying ? 'playing' : 'paused');
+              repeatCurrentSentence();
               break;
-            case 'KeyP':
+            case 'KeyU':
               e.preventDefault();
-              pauseAudio();
+              decreaseSpeed();
+              break;
+            case 'KeyN':
+              e.preventDefault();
+              increaseSpeed();
+              break;
+            case 'KeyM':
+              e.preventDefault();
+              resetSpeed();
               break;
             case 'KeyS':
               e.preventDefault();
@@ -1728,11 +1901,13 @@
               <h3>⌨️ Keyboard Shortcuts</h3>
               <div class="shortcut-list">
                 <div><kbd>Space</kbd> Repeat Current</div>
-                <div><kbd>←</kbd> Play Previous</div>
-                <div><kbd>→</kbd> Play Next</div>
-                <div><kbd>P</kbd> Pause Audio</div>
-                <div><kbd>J</kbd> Jump Back 10s</div>
-                <div><kbd>L</kbd> Jump Forward 10s</div>
+                <div><kbd>I</kbd> Repeat Current</div>
+                <div><kbd>J</kbd> Play Previous</div>
+                <div><kbd>L</kbd> Play Next</div>
+                <div><kbd>K</kbd> Play/Pause</div>
+                <div><kbd>U</kbd> Speed Down</div>
+                <div><kbd>N</kbd> Speed Up</div>
+                <div><kbd>M</kbd> Reset Speed</div>
                 <div><kbd>O</kbd> Load Files</div>
                 <div><kbd>T</kbd> Toggle Lyrics</div>
                 <div><kbd>H</kbd> Toggle Help</div>
