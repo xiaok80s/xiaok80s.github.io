@@ -159,6 +159,55 @@
         box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
       }
 
+      .lyrics-toggle-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+
+      .lyrics-toggle-container.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .lyrics-toggle {
+        background: #17a2b8;
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .lyrics-toggle:hover {
+        background: #138496;
+        box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+      }
+
+      .lyrics-toggle.active {
+        background: #28a745;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+      }
+
+      .lyrics-toggle.active:hover {
+        background: #218838;
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      }
+
+      .toggle-icon {
+        font-size: 1rem;
+        transition: transform 0.2s ease;
+      }
+
+      .lyrics-toggle.active .toggle-icon {
+        transform: rotate(180deg);
+      }
+
       .progress-container {
         margin-bottom: 20px;
       }
@@ -327,6 +376,15 @@
           min-width: 0;
         }
 
+        .lyrics-toggle-container {
+          margin-bottom: 15px;
+        }
+
+        .lyrics-toggle {
+          padding: 6px 12px;
+          font-size: 0.8rem;
+        }
+
         .progress-container {
           margin-bottom: 15px;
         }
@@ -376,6 +434,15 @@
 
         .nav-button {
           min-width: 55px;
+        }
+
+        .lyrics-toggle-container {
+          margin-bottom: 12px;
+        }
+
+        .lyrics-toggle {
+          padding: 5px 10px;
+          font-size: 0.75rem;
         }
 
         .file-row .open-file {
@@ -509,6 +576,14 @@
         <button class="nav-button" onclick="nextSentence()" disabled>Next</button>
       </div>
 
+      <!-- Lyrics Toggle -->
+      <div class="lyrics-toggle-container" id="lyricsToggleContainer">
+        <button class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyrics()">
+          <span class="toggle-icon">👁️</span>
+          <span id="lyricsToggleText">Show Lyrics</span>
+        </button>
+      </div>
+
       <div class="progress-container">
         <div class="progress-bar" onclick="seekAudio(event)">
           <div class="progress-fill" id="progressFill"></div>
@@ -557,6 +632,7 @@
       let lrcData = []; // Will store parsed LRC subtitle data
       let currentLrcIndex = -1;
       let lrcLoaded = false;
+      let lyricsVisible = false; // Track lyrics display state
 
       // Initialize event listeners
       audioPlayer.addEventListener('timeupdate', updateProgress);
@@ -719,6 +795,19 @@
         progressFill.style.width = '0%';
         currentTimeSpan.textContent = '0:00';
 
+        // Reset LRC state when loading new audio file
+        lrcData = [];
+        lrcLoaded = false;
+        currentLrcIndex = -1;
+        lyricsVisible = false;
+
+        // Hide text display and update toggle visibility
+        document.getElementById('currentText').style.display = 'none';
+        updateLyricsToggleVisibility();
+
+        // Reset play button text to ensure it shows "Play" when loading new file
+        playPauseBtn.innerHTML = 'Play';
+
         // Enable controls when metadata is loaded
         audioPlayer.addEventListener('loadedmetadata', async function onMetadataLoaded() {
           enableControls();
@@ -775,10 +864,26 @@
             lrcData = parseLrcContent(e.target.result);
             lrcLoaded = true;
 
-            document.getElementById('currentText').style.display = 'block';
+            // Show lyrics toggle button
+            updateLyricsToggleVisibility();
+
+            // Show lyrics by default when LRC is loaded
+            lyricsVisible = true;
+            document.getElementById('currentText').style.display = 'flex';
+
+            // Update toggle button state
+            const toggleBtn = document.getElementById('lyricsToggleBtn');
+            const toggleText = document.getElementById('lyricsToggleText');
+            const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+            toggleBtn.classList.add('active');
+            toggleText.textContent = 'Hide Lyrics';
+            toggleIcon.textContent = '🙈';
+
+            // Generate sentence boundaries from LRC data
+            generateSentencesFromLrc();
 
             updateStatus(
-              `Audio and subtitles ready! Found ${lrcData.length} subtitle lines.`,
+              `Audio and subtitles ready! Found ${lrcData.length} subtitle lines, ${sentences.length} sentence segments.`,
               'stopped'
             );
 
@@ -786,12 +891,44 @@
             if (audioPlayer.currentTime > 0) {
               updateCurrentText(audioPlayer.currentTime);
             }
+
+            // Visualize the new LRC-based segments
+            visualizeSegments();
           } catch (error) {
             console.error('Error parsing LRC file:', error);
             updateStatus('Error parsing LRC file - please check format', 'stopped');
           }
         };
         reader.readAsText(file);
+      }
+
+      /**
+       * Generate sentence segments from LRC data
+       * This provides more accurate sentence boundaries than silence detection
+       */
+      function generateSentencesFromLrc() {
+        if (!lrcData || lrcData.length === 0) return;
+
+        sentences = [];
+        currentSentenceIndex = 0;
+
+        for (let i = 0; i < lrcData.length; i++) {
+          const currentEntry = lrcData[i];
+          const nextEntry = lrcData[i + 1];
+
+          // Calculate end time for this sentence
+          const endTime = nextEntry
+            ? nextEntry.time
+            : audioPlayer.duration || currentEntry.time + 5;
+
+          sentences.push({
+            start: currentEntry.time,
+            end: endTime,
+            text: currentEntry.text, // Store the text for reference
+          });
+        }
+
+        console.log(`Generated ${sentences.length} sentences from LRC data`);
       }
 
       /**
@@ -925,6 +1062,57 @@
         durationSpan.textContent = formatTime(audioPlayer.duration);
       }
 
+      // ================================
+      // LYRICS TOGGLE FUNCTIONALITY
+      // ================================
+
+      function toggleLyrics() {
+        const currentText = document.getElementById('currentText');
+        const toggleBtn = document.getElementById('lyricsToggleBtn');
+        const toggleText = document.getElementById('lyricsToggleText');
+        const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+
+        lyricsVisible = !lyricsVisible;
+
+        if (lyricsVisible && lrcLoaded) {
+          // Show lyrics
+          currentText.style.display = 'flex';
+          toggleBtn.classList.add('active');
+          toggleText.textContent = 'Hide Lyrics';
+          toggleIcon.textContent = '🙈';
+        } else {
+          // Hide lyrics
+          currentText.style.display = 'none';
+          toggleBtn.classList.remove('active');
+          toggleText.textContent = 'Show Lyrics';
+          toggleIcon.textContent = '👁️';
+          lyricsVisible = false; // Ensure it's false if no LRC loaded
+        }
+      }
+
+      function updateLyricsToggleVisibility() {
+        const toggleContainer = document.getElementById('lyricsToggleContainer');
+
+        if (lrcLoaded) {
+          // Show the toggle button when LRC is available
+          toggleContainer.classList.add('visible');
+        } else {
+          // Hide the toggle button when no LRC
+          toggleContainer.classList.remove('visible');
+          // Also hide lyrics and reset toggle state
+          const currentText = document.getElementById('currentText');
+          const toggleBtn = document.getElementById('lyricsToggleBtn');
+          const toggleText = document.getElementById('lyricsToggleText');
+          const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+
+          currentText.style.display = 'none';
+          toggleBtn.classList.remove('active');
+          toggleText.textContent = 'Show Lyrics';
+          toggleIcon.textContent = '👁️';
+          lyricsVisible = false;
+        }
+      }
+
       function updateProgress() {
         if (audioPlayer.duration && !isNaN(audioPlayer.duration)) {
           const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -983,6 +1171,20 @@
 
       async function detectSilenceBoundaries(file) {
         try {
+          // If LRC data is already available, use it instead of silence detection
+          if (lrcLoaded && lrcData.length > 0) {
+            updateStatus('Using LRC-based sentence boundaries...', 'stopped');
+            generateSentencesFromLrc();
+            updateStatus(
+              `Using ${sentences.length} LRC-based sentence segments`,
+              'stopped'
+            );
+
+            // Visualize segments on progress bar
+            setTimeout(() => visualizeSegments(), 100);
+            return sentences;
+          }
+
           updateStatus('Analyzing audio for sentence boundaries...', 'stopped');
 
           // Initialize AudioContext if not already done
@@ -1004,15 +1206,18 @@
 
           currentSentenceIndex = 0;
 
-          updateStatus(`Found ${sentences.length} sentence segments`, 'stopped');
+          updateStatus(
+            `Found ${sentences.length} auto-detected sentence segments`,
+            'stopped'
+          );
 
           // Visualize segments on progress bar
           setTimeout(() => visualizeSegments(), 100); // Small delay to ensure audio duration is available
 
           return sentences;
         } catch (error) {
-          console.error('Error in silence detection:', error);
-          updateStatus('Silence detection failed, using fallback segments', 'stopped');
+          console.error('Error in sentence boundary detection:', error);
+          updateStatus('Sentence detection failed, using fallback segments', 'stopped');
           // Fall back to mock sentences
           generateMockSentences();
           return sentences;
@@ -1254,39 +1459,42 @@
        * Enhanced keyboard shortcuts for better usability
        */
       document.addEventListener('keydown', (e) => {
-        // Only handle shortcuts if audio is loaded and no input is focused
-        if (audioPlayer.src && !isInputFocused()) {
+        // Don't handle shortcuts if an input is focused
+        if (isInputFocused()) {
+          return;
+        }
+
+        // Handle shortcuts that work without audio loaded
+        switch (e.code) {
+          case 'KeyH':
+          case 'F1':
+            e.preventDefault();
+            toggleHelp();
+            return;
+          case 'Escape':
+            e.preventDefault();
+            hideHelp();
+            return;
+          case 'KeyO':
+            e.preventDefault();
+            openBothFiles();
+            return;
+        }
+
+        // Handle shortcuts that require audio to be loaded
+        if (audioPlayer.src) {
           switch (e.code) {
-            case 'Space':
+            case 'KeyK':
               e.preventDefault();
               togglePlayPause();
               break;
-            case 'ArrowLeft':
+            case 'KeyJ':
               e.preventDefault();
               previousSentence();
               break;
-            case 'ArrowRight':
-              e.preventDefault();
-              nextSentence();
-              break;
-            case 'KeyJ':
-              e.preventDefault();
-              // Jump back 10 seconds
-              audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
-              updateStatus('Jumped back 10 seconds', isPlaying ? 'playing' : 'paused');
-              break;
             case 'KeyL':
               e.preventDefault();
-              // Jump forward 10 seconds
-              audioPlayer.currentTime = Math.min(
-                audioPlayer.duration,
-                audioPlayer.currentTime + 10
-              );
-              updateStatus('Jumped forward 10 seconds', isPlaying ? 'playing' : 'paused');
-              break;
-            case 'KeyO':
-              e.preventDefault();
-              openBothFiles();
+              nextSentence();
               break;
             case 'KeyS':
               e.preventDefault();
@@ -1295,14 +1503,11 @@
               }
               openLrcFile();
               break;
-            case 'KeyH':
-            case 'F1':
+            case 'KeyT':
               e.preventDefault();
-              showHelp();
-              break;
-            case 'Escape':
-              e.preventDefault();
-              hideHelp();
+              if (lrcLoaded) {
+                toggleLyrics();
+              }
               break;
           }
         }
@@ -1319,6 +1524,21 @@
             activeElement.tagName === 'TEXTAREA' ||
             activeElement.contentEditable === 'true')
         );
+      }
+
+      /**
+       * Toggle keyboard shortcuts help overlay
+       */
+      function toggleHelp() {
+        const helpOverlay = document.getElementById('helpOverlay');
+
+        if (helpOverlay && helpOverlay.style.display === 'flex') {
+          // Help is currently visible, so hide it
+          hideHelp();
+        } else {
+          // Help is hidden or doesn't exist, so show it
+          showHelp();
+        }
       }
 
       /**
@@ -1340,8 +1560,8 @@
                 <div><kbd>J</kbd> Jump Back 10s</div>
                 <div><kbd>L</kbd> Jump Forward 10s</div>
                 <div><kbd>O</kbd> Load Files</div>
-                <div><kbd>S</kbd> Load LRC Subtitles</div>
-                <div><kbd>H</kbd> Show This Help</div>
+                <div><kbd>T</kbd> Toggle Lyrics</div>
+                <div><kbd>H</kbd> Toggle Help</div>
                 <div><kbd>Esc</kbd> Close Help</div>
               </div>
               <p class="help-note">💡 Click anywhere or press Esc to close</p>
