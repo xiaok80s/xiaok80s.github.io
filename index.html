@@ -98,8 +98,8 @@
         color: white;
         border: none;
         border-radius: 50px;
-        padding: 15px 25px;
-        font-size: 1rem;
+        padding: 12px 20px;
+        font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.3s ease;
         display: flex;
@@ -172,18 +172,14 @@
       }
 
       .lyrics-toggle-container {
-        display: flex;
+        display: none;
         justify-content: center;
         align-items: center;
         margin-bottom: 20px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
       }
 
       .lyrics-toggle-container.visible {
-        opacity: 1;
-        pointer-events: auto;
+        display: flex;
       }
 
       .lyrics-toggle {
@@ -600,6 +596,8 @@
 
         <button id="repeatBtn" onclick="repeatCurrentSentence()" disabled>Repeat</button>
 
+        <button id="pauseBtn" onclick="pauseAudio()" disabled>Pause</button>
+
         <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
       </div>
 
@@ -667,6 +665,9 @@
       audioPlayer.addEventListener('play', onPlay);
       audioPlayer.addEventListener('pause', onPause);
 
+      // Initialize lyrics toggle visibility (hidden by default since lrcLoaded = false)
+      updateLyricsToggleVisibility();
+
       // Utility function to detect iOS
       function isIOS() {
         return (
@@ -685,6 +686,96 @@
         }
 
         openBothFiles();
+      }
+
+      function clearCurrentAudioAndLyrics() {
+        // Pause the audio
+        if (audioPlayer) {
+          audioPlayer.pause();
+        }
+
+        // Clear the audio source and revoke blob URL if exists
+        if (audioPlayer && audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioPlayer.src);
+        }
+        if (audioPlayer) {
+          audioPlayer.src = '';
+          audioPlayer.removeAttribute('src');
+        }
+
+        // Reset all state variables
+        isPlaying = false;
+        currentSentenceIndex = 0;
+        sentences = [];
+        currentFileName = '';
+        lrcData = [];
+        currentLrcIndex = -1;
+        lrcLoaded = false;
+
+        // Clear UI elements
+        if (fileInfoDiv) {
+          fileInfoDiv.textContent = 'No audio file selected';
+        }
+        if (statusDiv) {
+          statusDiv.textContent = 'Ready to load files';
+        }
+        if (currentTimeSpan) {
+          currentTimeSpan.textContent = '0:00';
+        }
+        if (durationSpan) {
+          durationSpan.textContent = '0:00';
+        }
+        if (progressFill) {
+          progressFill.style.width = '0%';
+        }
+
+        // Clear lyrics display
+        const lyricsContainer = document.getElementById('lyricsDisplay');
+        if (lyricsContainer) {
+          lyricsContainer.innerHTML = '';
+          lyricsContainer.style.display = 'none';
+        }
+
+        // Reset lyrics toggle
+        lyricsVisible = false;
+        const lyricsToggleText = document.getElementById('lyricsToggleText');
+        if (lyricsToggleText) {
+          lyricsToggleText.textContent = 'Show Lyrics';
+        }
+
+        // Update lyrics toggle visibility based on lrcLoaded status
+        updateLyricsToggleVisibility();
+
+        // Remove sentence markers from progress bar
+        const progressContainer = document.querySelector('.progress-container');
+        if (progressContainer) {
+          const markers = progressContainer.querySelectorAll('.sentence-marker');
+          markers.forEach((marker) => marker.remove());
+        }
+
+        // Disable control buttons
+        const navButtons = document.querySelectorAll('.nav-button');
+        navButtons.forEach((button) => {
+          button.disabled = true;
+        });
+
+        if (repeatBtn) {
+          repeatBtn.disabled = true;
+        }
+
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) {
+          pauseBtn.disabled = true;
+        }
+
+        // Clean up audio context
+        if (audioContext) {
+          audioContext.close();
+          audioContext = null;
+        }
+        audioBuffer = null;
+
+        console.log('Cleared all audio and lyrics data');
       }
 
       function openBothFiles() {
@@ -731,6 +822,9 @@
         const files = Array.from(event.target.files);
 
         if (files.length === 0) return;
+
+        // Clear any existing audio and lyrics first when new files are selected
+        clearCurrentAudioAndLyrics();
 
         let audioFile = null;
         let lrcFile = null;
@@ -1048,6 +1142,13 @@
       function onPause() {
         isPlaying = false;
         updateStatus('Paused', 'paused');
+      }
+
+      function pauseAudio() {
+        if (audioPlayer && !audioPlayer.paused) {
+          audioPlayer.pause();
+          console.log('Audio paused by user');
+        }
       }
 
       function onAudioEnded() {
@@ -1564,6 +1665,10 @@
               );
               updateStatus('Jumped forward 10 seconds', isPlaying ? 'playing' : 'paused');
               break;
+            case 'KeyP':
+              e.preventDefault();
+              pauseAudio();
+              break;
             case 'KeyS':
               e.preventDefault();
               if (e.ctrlKey || e.metaKey) {
@@ -1625,6 +1730,7 @@
                 <div><kbd>Space</kbd> Repeat Current</div>
                 <div><kbd>←</kbd> Play Previous</div>
                 <div><kbd>→</kbd> Play Next</div>
+                <div><kbd>P</kbd> Pause Audio</div>
                 <div><kbd>J</kbd> Jump Back 10s</div>
                 <div><kbd>L</kbd> Jump Forward 10s</div>
                 <div><kbd>O</kbd> Load Files</div>
