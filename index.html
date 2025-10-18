@@ -181,21 +181,10 @@
         box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
       }
 
-      #repeatBtn {
-        background: #fd7e14;
-        box-shadow: 0 4px 15px rgba(253, 126, 20, 0.3);
-      }
-
-      #repeatBtn:hover {
-        background: #e8690a;
-        box-shadow: 0 6px 20px rgba(253, 126, 20, 0.4);
-      }
-
       .lyrics-toggle-container {
         display: none;
         justify-content: center;
         align-items: center;
-        margin-bottom: 20px;
       }
 
       .lyrics-toggle-container.visible {
@@ -234,6 +223,16 @@
 
       .lyrics-toggle.active .toggle-icon {
         transform: rotate(180deg);
+      }
+
+      /* Toggle buttons container */
+      .toggle-buttons-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
       }
 
       /* Desktop-only hover transform effects */
@@ -450,13 +449,13 @@
           min-width: 0;
         }
 
-        #repeatBtn {
-          flex: 1;
-          min-width: 0;
-        }
-
         .lyrics-toggle-container {
           margin-bottom: 15px;
+        }
+
+        .toggle-buttons-container {
+          margin-bottom: 15px;
+          gap: 8px;
         }
 
         .lyrics-toggle {
@@ -516,13 +515,13 @@
           min-width: 0;
         }
 
-        #repeatBtn {
-          flex: 1;
-          min-width: 0;
-        }
-
         .lyrics-toggle-container {
           margin-bottom: 12px;
+        }
+
+        .toggle-buttons-container {
+          margin-bottom: 12px;
+          gap: 6px;
         }
 
         .lyrics-toggle {
@@ -656,21 +655,26 @@
       <div class="controls">
         <button id="playPauseBtn" onclick="togglePlayPause()" disabled>Play</button>
 
-        <button id="repeatBtn" onclick="repeatCurrentSentence()" disabled>Repeat</button>
-
-        <button class="nav-button" onclick="playPreviousSentence()" disabled>
-          Previous
+        <button
+          class="lyrics-toggle active"
+          id="autoStopToggleBtn"
+          onclick="toggleAutoStop()">
+          <span id="autoStopToggleText">Sentence On</span>
         </button>
+
+        <button class="nav-button" onclick="playPreviousSentence()" disabled>Prev</button>
 
         <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
       </div>
 
-      <!-- Lyrics Toggle -->
-      <div class="lyrics-toggle-container" id="lyricsToggleContainer">
-        <button class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyrics()">
-          <span class="toggle-icon">👁️</span>
-          <span id="lyricsToggleText">Show Lyrics</span>
-        </button>
+      <!-- Toggle Buttons Container -->
+      <div class="toggle-buttons-container">
+        <!-- Lyrics Toggle (only visible when LRC loaded) -->
+        <div class="lyrics-toggle-container" id="lyricsToggleContainer">
+          <button class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyrics()">
+            <span id="lyricsToggleText">Show Lyrics</span>
+          </button>
+        </div>
       </div>
 
       <div class="progress-container">
@@ -730,7 +734,6 @@
     <script>
       // Global variables
       let audioPlayer = document.getElementById('audioPlayer');
-      let repeatBtn = document.getElementById('repeatBtn');
       let progressFill = document.getElementById('progressFill');
       let currentTimeSpan = document.getElementById('currentTime');
       let durationSpan = document.getElementById('duration');
@@ -749,6 +752,10 @@
       let currentLrcIndex = -1;
       let lrcLoaded = false;
       let lyricsVisible = false; // Track lyrics display state
+
+      // Sentence-by-sentence playback
+      let sentenceBysentenceMode = true; // Default to sentence mode on
+      let sentenceEndTimer = null;
 
       // Initialize event listeners
       audioPlayer.addEventListener('timeupdate', updateProgress);
@@ -803,6 +810,14 @@
         currentLrcIndex = -1;
         lrcLoaded = false;
 
+        // Reset sentence-by-sentence mode state
+        sentenceBysentenceMode = true; // Default to sentence mode on
+        if (sentenceEndTimer) {
+          clearTimeout(sentenceEndTimer);
+          sentenceEndTimer = null;
+        }
+        lastSentenceIndex = -1;
+
         // Clear UI elements
         if (fileInfoDiv) {
           fileInfoDiv.textContent = 'No audio file selected';
@@ -840,6 +855,14 @@
           lyricsToggleText.textContent = 'Show Lyrics';
         }
 
+        // Reset auto-stop toggle to default state (sentence mode on)
+        const autoStopToggleBtn = document.getElementById('autoStopToggleBtn');
+        const autoStopToggleText = document.getElementById('autoStopToggleText');
+        if (autoStopToggleBtn && autoStopToggleText) {
+          autoStopToggleBtn.classList.add('active');
+          autoStopToggleText.textContent = 'Sentence On';
+        }
+
         // Update lyrics toggle visibility based on lrcLoaded status
         updateLyricsToggleVisibility();
 
@@ -855,10 +878,6 @@
         navButtons.forEach((button) => {
           button.disabled = true;
         });
-
-        if (repeatBtn) {
-          repeatBtn.disabled = true;
-        }
 
         const playPauseBtn = document.getElementById('playPauseBtn');
         if (playPauseBtn) {
@@ -1102,10 +1121,8 @@
             // Update toggle button state to show "Show Lyrics"
             const toggleBtn = document.getElementById('lyricsToggleBtn');
             const toggleText = document.getElementById('lyricsToggleText');
-            const toggleIcon = toggleBtn.querySelector('.toggle-icon');
             toggleBtn.classList.remove('active');
             toggleText.textContent = 'Show Lyrics';
-            toggleIcon.textContent = '👁️';
 
             // Generate sentence boundaries from LRC data
             generateSentencesFromLrc();
@@ -1248,10 +1265,17 @@
         isPlaying = true;
         updateStatus('Playing', 'playing');
         updatePlayPauseButton();
+        // Reset auto-stop flag when playback resumes
+        hasAutoStoppedForCurrentSentence = false;
       }
 
       function onPause() {
         isPlaying = false;
+        // Clear sentence timer when paused
+        if (sentenceEndTimer) {
+          clearTimeout(sentenceEndTimer);
+          sentenceEndTimer = null;
+        }
         updateStatus('Paused', 'paused');
         updatePlayPauseButton();
       }
@@ -1259,10 +1283,19 @@
       function togglePlayPause() {
         if (audioPlayer && audioPlayer.src) {
           if (audioPlayer.paused) {
-            audioPlayer.play().catch((error) => {
-              console.error('Error playing audio:', error);
-            });
+            if (sentenceBysentenceMode) {
+              playSingleSentence();
+            } else {
+              audioPlayer.play().catch((error) => {
+                console.error('Error playing audio:', error);
+              });
+            }
           } else {
+            // Clear sentence timer when pausing manually
+            if (sentenceEndTimer) {
+              clearTimeout(sentenceEndTimer);
+              sentenceEndTimer = null;
+            }
             audioPlayer.pause();
           }
         }
@@ -1341,7 +1374,6 @@
         const currentText = document.getElementById('currentText');
         const toggleBtn = document.getElementById('lyricsToggleBtn');
         const toggleText = document.getElementById('lyricsToggleText');
-        const toggleIcon = toggleBtn.querySelector('.toggle-icon');
 
         lyricsVisible = !lyricsVisible;
 
@@ -1350,15 +1382,124 @@
           currentText.style.display = 'flex';
           toggleBtn.classList.add('active');
           toggleText.textContent = 'Hide Lyrics';
-          toggleIcon.textContent = '🙈';
         } else {
           // Hide lyrics
           currentText.style.display = 'none';
           toggleBtn.classList.remove('active');
           toggleText.textContent = 'Show Lyrics';
-          toggleIcon.textContent = '👁️';
           lyricsVisible = false; // Ensure it's false if no LRC loaded
         }
+      }
+
+      function toggleAutoStop() {
+        sentenceBysentenceMode = !sentenceBysentenceMode;
+
+        const toggleBtn = document.getElementById('autoStopToggleBtn');
+        const toggleText = document.getElementById('autoStopToggleText');
+
+        // Clear any existing timer
+        if (sentenceEndTimer) {
+          clearTimeout(sentenceEndTimer);
+          sentenceEndTimer = null;
+        }
+
+        if (sentenceBysentenceMode) {
+          // Enable sentence-by-sentence mode
+          toggleBtn.classList.add('active');
+          toggleText.textContent = 'Sentence On';
+
+          // If audio is currently playing, transition to sentence-by-sentence playback
+          const wasPlaying = !audioPlayer.paused;
+          if (wasPlaying) {
+            // First update the current sentence index based on current playback time
+            updateCurrentSentenceIndex();
+
+            // Pause the audio
+            audioPlayer.pause();
+
+            // Small delay to ensure pause is processed, then start sentence playback
+            setTimeout(() => {
+              playSingleSentence();
+            }, 50);
+          }
+
+          updateStatus(
+            `Sentence-by-sentence mode enabled (${sentences.length} sentences)`,
+            wasPlaying ? 'playing' : 'paused'
+          );
+        } else {
+          // Disable sentence-by-sentence mode
+          toggleBtn.classList.remove('active');
+          toggleText.textContent = 'Sentence Off';
+          updateStatus(
+            'Sentence-by-sentence mode disabled',
+            isPlaying ? 'playing' : 'paused'
+          );
+        }
+      }
+
+      function updateCurrentSentenceIndex() {
+        if (sentences.length > 0) {
+          for (let i = 0; i < sentences.length; i++) {
+            if (
+              audioPlayer.currentTime >= sentences[i].start &&
+              audioPlayer.currentTime <= sentences[i].end
+            ) {
+              currentSentenceIndex = i;
+              updateCurrentSegmentMarker();
+              return;
+            }
+          }
+        }
+      }
+
+      function playSingleSentence() {
+        if (!sentenceBysentenceMode || sentences.length === 0) {
+          // If not in sentence mode, play normally
+          audioPlayer.play().catch((error) => {
+            console.error('Error playing audio:', error);
+          });
+          return;
+        }
+
+        // Clear any existing timer
+        if (sentenceEndTimer) {
+          clearTimeout(sentenceEndTimer);
+          sentenceEndTimer = null;
+        }
+
+        // Get current sentence
+        const currentSentence = sentences[currentSentenceIndex];
+        if (!currentSentence) {
+          updateStatus('No sentence selected', 'stopped');
+          return;
+        }
+
+        // Set playback to start of current sentence
+        audioPlayer.currentTime = currentSentence.start;
+
+        // Calculate duration until end of sentence
+        const sentenceDuration = (currentSentence.end - currentSentence.start) * 1000; // Convert to milliseconds
+
+        // Start playing
+        audioPlayer.play().catch((error) => {
+          console.error('Error playing audio:', error);
+        });
+
+        // Set timer to stop at end of sentence
+        sentenceEndTimer = setTimeout(() => {
+          audioPlayer.pause();
+          updateStatus(
+            `Completed sentence ${currentSentenceIndex + 1}/${sentences.length}`,
+            'paused'
+          );
+          updateCurrentSegmentMarker();
+        }, sentenceDuration);
+
+        updateStatus(
+          `Playing sentence ${currentSentenceIndex + 1}/${sentences.length}`,
+          'playing'
+        );
       }
 
       function updateLyricsToggleVisibility() {
@@ -1374,12 +1515,10 @@
           const currentText = document.getElementById('currentText');
           const toggleBtn = document.getElementById('lyricsToggleBtn');
           const toggleText = document.getElementById('lyricsToggleText');
-          const toggleIcon = toggleBtn.querySelector('.toggle-icon');
 
           currentText.style.display = 'none';
           toggleBtn.classList.remove('active');
           toggleText.textContent = 'Show Lyrics';
-          toggleIcon.textContent = '👁️';
           lyricsVisible = false;
         }
       }
@@ -1639,9 +1778,13 @@
         previousSentence();
         // Auto-play the selected sentence
         if (audioPlayer.src && sentences.length > 0) {
-          audioPlayer.play().catch((error) => {
-            console.error('Error playing audio:', error);
-          });
+          if (sentenceBysentenceMode) {
+            playSingleSentence();
+          } else {
+            audioPlayer.play().catch((error) => {
+              console.error('Error playing audio:', error);
+            });
+          }
         }
       }
 
@@ -1649,13 +1792,23 @@
         nextSentence();
         // Auto-play the selected sentence
         if (audioPlayer.src && sentences.length > 0) {
-          audioPlayer.play().catch((error) => {
-            console.error('Error playing audio:', error);
-          });
+          if (sentenceBysentenceMode) {
+            playSingleSentence();
+          } else {
+            audioPlayer.play().catch((error) => {
+              console.error('Error playing audio:', error);
+            });
+          }
         }
       }
 
       function repeatCurrentSentence() {
+        // Clear any existing timer
+        if (sentenceEndTimer) {
+          clearTimeout(sentenceEndTimer);
+          sentenceEndTimer = null;
+        }
+
         if (sentences.length === 0) {
           // If no sentences defined, restart from current position
           if (audioPlayer.src) {
@@ -1668,12 +1821,9 @@
           return;
         }
 
-        // Go to the start of current sentence and play
+        // Go to the start of current sentence
         if (currentSentenceIndex >= 0 && currentSentenceIndex < sentences.length) {
           audioPlayer.currentTime = sentences[currentSentenceIndex].start;
-          audioPlayer.play().catch((error) => {
-            console.error('Error playing audio:', error);
-          });
           updateCurrentSegmentMarker();
           const duration =
             sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
@@ -1683,10 +1833,25 @@
             } (${formatTime(duration)})`,
             'playing'
           );
+
+          // Use sentence-by-sentence playback if enabled, otherwise normal play
+          if (sentenceBysentenceMode) {
+            playSingleSentence();
+          } else {
+            audioPlayer.play().catch((error) => {
+              console.error('Error playing audio:', error);
+            });
+          }
         }
       }
 
       function previousSentence() {
+        // Clear any existing timer
+        if (sentenceEndTimer) {
+          clearTimeout(sentenceEndTimer);
+          sentenceEndTimer = null;
+        }
+
         if (sentences.length === 0) {
           // If no sentences defined, go back 10 seconds
           audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
@@ -1694,14 +1859,25 @@
           return;
         }
 
-        // Find the appropriate previous segment
-        let targetIndex = currentSentenceIndex - 1;
+        // Determine behavior based on playback state
+        let targetIndex;
+        let isRepeat = false;
 
-        // If we're at the beginning of the current segment, go to previous segment
-        // If we're in the middle, go to the beginning of current segment
-        if (audioPlayer.currentTime - sentences[currentSentenceIndex].start > 2.0) {
-          // If more than 2 seconds into current segment, restart current segment
+        if (audioPlayer.paused) {
+          // If NOT playing: Always restart current sentence (repeat behavior)
           targetIndex = currentSentenceIndex;
+          isRepeat = true;
+        } else {
+          // If playing: Go to previous sentence, or restart current if more than 2 seconds in
+          if (audioPlayer.currentTime - sentences[currentSentenceIndex].start > 2.0) {
+            // If more than 2 seconds into current segment, restart current segment
+            targetIndex = currentSentenceIndex;
+            isRepeat = true;
+          } else {
+            // Go to previous sentence
+            targetIndex = currentSentenceIndex - 1;
+            isRepeat = false;
+          }
         }
 
         if (targetIndex >= 0) {
@@ -1710,10 +1886,12 @@
           updateCurrentSegmentMarker();
           const duration =
             sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
+
+          const action = isRepeat ? 'Repeating' : 'Previous';
           updateStatus(
-            `Segment ${currentSentenceIndex + 1}/${sentences.length} (${formatTime(
-              duration
-            )})`,
+            `${action} sentence ${currentSentenceIndex + 1}/${
+              sentences.length
+            } (${formatTime(duration)})`,
             isPlaying ? 'playing' : 'paused'
           );
         } else {
@@ -1723,9 +1901,20 @@
           updateCurrentSegmentMarker();
           updateStatus('Beginning of audio', isPlaying ? 'playing' : 'paused');
         }
+
+        // If in sentence-by-sentence mode and audio was playing, play the new sentence
+        if (sentenceBysentenceMode && !audioPlayer.paused) {
+          playSingleSentence();
+        }
       }
 
       function nextSentence() {
+        // Clear any existing timer
+        if (sentenceEndTimer) {
+          clearTimeout(sentenceEndTimer);
+          sentenceEndTimer = null;
+        }
+
         if (sentences.length === 0) {
           // If no sentences defined, go forward 10 seconds
           audioPlayer.currentTime = Math.min(
@@ -1755,6 +1944,11 @@
           }
           updateStatus('End of audio', isPlaying ? 'playing' : 'paused');
         }
+
+        // If in sentence-by-sentence mode and audio was playing, play the new sentence
+        if (sentenceBysentenceMode && !audioPlayer.paused) {
+          playSingleSentence();
+        }
       }
 
       // Update current sentence index based on current time
@@ -1768,8 +1962,7 @@
               if (currentSentenceIndex !== i) {
                 currentSentenceIndex = i;
                 updateCurrentSegmentMarker();
-
-                // Note: Removed automatic status updates during playback for cleaner UI
+                lastSentenceIndex = i;
               }
               break;
             }
@@ -1810,10 +2003,6 @@
         // Handle shortcuts that require audio to be loaded
         if (audioPlayer.src) {
           switch (e.code) {
-            case 'Space':
-              e.preventDefault();
-              repeatCurrentSentence();
-              break;
             case 'KeyJ':
               e.preventDefault();
               playPreviousSentence();
@@ -1825,10 +2014,6 @@
             case 'KeyK':
               e.preventDefault();
               togglePlayPause();
-              break;
-            case 'KeyI':
-              e.preventDefault();
-              repeatCurrentSentence();
               break;
             case 'KeyU':
               e.preventDefault();
@@ -1854,6 +2039,10 @@
               if (lrcLoaded) {
                 toggleLyrics();
               }
+              break;
+            case 'KeyA':
+              e.preventDefault();
+              toggleAutoStop();
               break;
           }
         }
@@ -1900,14 +2089,13 @@
             <div class="help-content">
               <h3>⌨️ Keyboard Shortcuts</h3>
               <div class="shortcut-list">
-                <div><kbd>Space</kbd> Repeat Current</div>
-                <div><kbd>I</kbd> Repeat Current</div>
                 <div><kbd>J</kbd> Play Previous</div>
                 <div><kbd>L</kbd> Play Next</div>
                 <div><kbd>K</kbd> Play/Pause</div>
                 <div><kbd>U</kbd> Speed Down</div>
                 <div><kbd>N</kbd> Speed Up</div>
                 <div><kbd>M</kbd> Reset Speed</div>
+                <div><kbd>A</kbd> Toggle Auto-Stop</div>
                 <div><kbd>O</kbd> Load Files</div>
                 <div><kbd>T</kbd> Toggle Lyrics</div>
                 <div><kbd>H</kbd> Toggle Help</div>
