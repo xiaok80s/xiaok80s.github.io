@@ -388,6 +388,21 @@
         animation: pulse 0.3s ease;
       }
 
+      /* Enhanced LRC word-level highlighting styles */
+      .text-content.enhanced-lrc {
+        font-size: 1.1rem;
+        line-height: 1.6;
+      }
+
+      .word-normal {
+        color: #666;
+      }
+
+      .word-highlight {
+        color: #4a90e2;
+        font-weight: 600;
+      }
+
       @keyframes pulse {
         0% {
           transform: scale(1);
@@ -477,6 +492,15 @@
           font-size: 1rem;
           line-height: 1.4;
         }
+
+        /* Mobile word highlighting adjustments */
+        .word-highlight {
+          font-size: 0.95rem;
+        }
+
+        .word-normal {
+          font-size: 0.95rem;
+        }
       }
 
       @media (max-width: 400px) {
@@ -556,6 +580,15 @@
         .text-content {
           font-size: 0.9rem;
           line-height: 1.3;
+        }
+
+        /* Small mobile word highlighting adjustments */
+        .word-highlight {
+          font-size: 0.85rem;
+        }
+
+        .word-normal {
+          font-size: 0.85rem;
         }
       }
 
@@ -653,8 +686,6 @@
       </div>
 
       <div class="controls">
-        <button id="playPauseBtn" onclick="togglePlayPause()" disabled>Play</button>
-
         <button
           class="lyrics-toggle active"
           id="autoStopToggleBtn"
@@ -662,9 +693,11 @@
           <span id="autoStopToggleText">Sentence On</span>
         </button>
 
+        <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
+
         <button class="nav-button" onclick="playPreviousSentence()" disabled>Prev</button>
 
-        <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
+        <button id="playPauseBtn" onclick="togglePlayPause()" disabled>Play</button>
       </div>
 
       <!-- Toggle Buttons Container -->
@@ -1127,8 +1160,13 @@
             // Generate sentence boundaries from LRC data
             generateSentencesFromLrc();
 
+            // Count enhanced LRC entries (with word-level timing)
+            const enhancedCount = lrcData.filter((entry) => entry.isEnhanced).length;
+            const enhancedText =
+              enhancedCount > 0 ? ` (${enhancedCount} with word-level timing)` : '';
+
             updateStatus(
-              `Audio and subtitles ready! Found ${lrcData.length} subtitle lines, ${sentences.length} sentence segments.`,
+              `Audio and subtitles ready! Found ${lrcData.length} subtitle lines${enhancedText}, ${sentences.length} sentence segments.`,
               'stopped'
             );
 
@@ -1177,9 +1215,9 @@
       }
 
       /**
-       * Parses LRC file content into structured data
+       * Parses LRC file content into structured data, supporting Enhanced LRC format
        * @param {string} content - Raw LRC file content
-       * @returns {Array} Array of {time, text} objects
+       * @returns {Array} Array of {time, text, words} objects
        */
       function parseLrcContent(content) {
         const lines = content.split('\n');
@@ -1192,15 +1230,22 @@
             const minutes = parseInt(match[1]);
             const seconds = parseInt(match[2]);
             const centiseconds = parseInt(match[3] || '0');
-            const text = match[4].trim();
+            let text = match[4].trim();
 
             const timeInSeconds = minutes * 60 + seconds + centiseconds / 100;
 
             if (text) {
-              // Only add non-empty text lines
+              // Parse Enhanced LRC format for word-level timing
+              const wordTimings = parseWordTimings(text);
+
+              // Clean text for display (remove timing tags)
+              const cleanText = text.replace(/<\d{2}:\d{2}\.\d{2}>/g, '');
+
               lrcEntries.push({
                 time: timeInSeconds,
-                text: text,
+                text: cleanText,
+                words: wordTimings, // Array of {word, startTime} objects
+                isEnhanced: wordTimings.length > 0,
               });
             }
           }
@@ -1211,7 +1256,55 @@
       }
 
       /**
-       * Updates the current text display based on audio time
+       * Parse word-level timings from Enhanced LRC format
+       * @param {string} text - Text with embedded timing tags like <00:28.73>word<00:28.98>
+       * @returns {Array} Array of {word, startTime, endTime} objects
+       */
+      function parseWordTimings(text) {
+        const words = [];
+        // Enhanced LRC pattern: <mm:ss.xx>word or word<mm:ss.xx>
+        const enhancedPattern = /<(\d{2}):(\d{2})\.(\d{2})>([^<]*)/g;
+        let match;
+        let lastEndTime = null;
+
+        while ((match = enhancedPattern.exec(text)) !== null) {
+          const minutes = parseInt(match[1]);
+          const seconds = parseInt(match[2]);
+          const centiseconds = parseInt(match[3]);
+          const wordText = match[4].trim();
+
+          const startTime = minutes * 60 + seconds + centiseconds / 100;
+
+          if (wordText) {
+            // Split on spaces to handle multiple words between timing tags
+            const wordParts = wordText.split(/\s+/).filter((w) => w);
+
+            wordParts.forEach((word, index) => {
+              const wordStartTime = startTime + index * 0.1; // Estimate timing for multiple words
+              words.push({
+                word: word,
+                startTime: wordStartTime,
+                endTime: null, // Will be set when we know the next word's start time
+              });
+            });
+          }
+        }
+
+        // Set end times based on next word's start time
+        for (let i = 0; i < words.length - 1; i++) {
+          words[i].endTime = words[i + 1].startTime;
+        }
+
+        // Set end time for last word (estimate 0.5 seconds)
+        if (words.length > 0) {
+          words[words.length - 1].endTime = words[words.length - 1].startTime + 0.5;
+        }
+
+        return words;
+      }
+
+      /**
+       * Updates the current text display based on audio time with word-level highlighting
        * @param {number} currentTime - Current audio playback time
        */
       function updateCurrentText(currentTime) {
@@ -1232,19 +1325,76 @@
 
         const textContent = document.getElementById('textContent');
 
-        if (activeIndex !== -1 && activeIndex !== currentLrcIndex) {
-          currentLrcIndex = activeIndex;
-          textContent.textContent = lrcData[activeIndex].text;
-          textContent.className = 'text-content highlighted';
+        if (activeIndex !== -1) {
+          const currentEntry = lrcData[activeIndex];
 
-          // Remove highlight after animation
-          setTimeout(() => {
-            textContent.className = 'text-content';
-          }, 300);
+          // Check if this is a new line or if we need to update word highlighting
+          if (activeIndex !== currentLrcIndex || currentEntry.isEnhanced) {
+            currentLrcIndex = activeIndex;
+
+            if (
+              currentEntry.isEnhanced &&
+              currentEntry.words &&
+              currentEntry.words.length > 0
+            ) {
+              // Enhanced LRC with word-level timing
+              displayEnhancedText(currentEntry, currentTime);
+            } else {
+              // Standard LRC
+              textContent.innerHTML = escapeHtml(currentEntry.text);
+              textContent.className = 'text-content highlighted';
+
+              // Remove highlight after animation for standard LRC
+              setTimeout(() => {
+                textContent.className = 'text-content';
+              }, 300);
+            }
+          } else if (currentEntry.isEnhanced && currentEntry.words) {
+            // Update word highlighting for already displayed enhanced text
+            displayEnhancedText(currentEntry, currentTime);
+          }
         } else if (activeIndex === -1) {
-          textContent.textContent = 'Waiting for subtitles...';
+          textContent.innerHTML = 'Waiting for subtitles...';
           textContent.className = 'text-content';
         }
+      }
+
+      /**
+       * Display Enhanced LRC text with word-level highlighting
+       * @param {Object} entry - LRC entry with word timings
+       * @param {number} currentTime - Current playback time
+       */
+      function displayEnhancedText(entry, currentTime) {
+        const textContent = document.getElementById('textContent');
+        let html = '';
+
+        entry.words.forEach((wordObj, index) => {
+          const isCurrentWord =
+            currentTime >= wordObj.startTime &&
+            (wordObj.endTime ? currentTime < wordObj.endTime : true);
+
+          const wordClass = isCurrentWord ? 'word-highlight' : 'word-normal';
+          html += `<span class="${wordClass}">${escapeHtml(wordObj.word)}</span>`;
+
+          // Add space between words (except for last word)
+          if (index < entry.words.length - 1) {
+            html += ' ';
+          }
+        });
+
+        textContent.innerHTML = html;
+        textContent.className = 'text-content enhanced-lrc';
+      }
+
+      /**
+       * Escape HTML characters to prevent XSS
+       * @param {string} text - Text to escape
+       * @returns {string} Escaped text
+       */
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
       }
 
       function enableControls() {
