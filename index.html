@@ -686,13 +686,6 @@
       </div>
 
       <div class="controls">
-        <button
-          class="lyrics-toggle active"
-          id="autoStopToggleBtn"
-          onclick="toggleAutoStop()">
-          <span id="autoStopToggleText">Sentence On</span>
-        </button>
-
         <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
 
         <button class="nav-button" onclick="playPreviousSentence()" disabled>Prev</button>
@@ -702,6 +695,15 @@
 
       <!-- Toggle Buttons Container -->
       <div class="toggle-buttons-container">
+        <!-- Auto Stop Toggle -->
+        <div class="auto-stop-toggle-container">
+          <button
+            class="lyrics-toggle active"
+            id="autoStopToggleBtn"
+            onclick="toggleAutoStop()">
+            <span id="autoStopToggleText">Sentence On</span>
+          </button>
+        </div>
         <!-- Lyrics Toggle (only visible when LRC loaded) -->
         <div class="lyrics-toggle-container" id="lyricsToggleContainer">
           <button class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyrics()">
@@ -1199,10 +1201,19 @@
           const currentEntry = lrcData[i];
           const nextEntry = lrcData[i + 1];
 
-          // Calculate end time for this sentence
-          const endTime = nextEntry
-            ? nextEntry.time
-            : audioPlayer.duration || currentEntry.time + 5;
+          // Calculate end time for this sentence with overlap
+          let endTime;
+          if (nextEntry) {
+            // Extend the current sentence to overlap with the next one by 300ms
+            const overlap = 0; // 50ms overlap
+            endTime = nextEntry.time + overlap;
+          } else {
+            // For the last entry, extend by 2.5 seconds or until audio end
+            endTime = Math.min(
+              currentEntry.time + 2.5,
+              audioPlayer.duration || currentEntry.time + 2.5
+            );
+          }
 
           sentences.push({
             start: currentEntry.time,
@@ -1714,167 +1725,25 @@
         }
       }
 
-      function generateMockSentences() {
-        // This function is now replaced by detectSilenceBoundaries
-        // But keeping as fallback if silence detection fails
-        sentences = [];
-        if (audioPlayer.duration) {
-          for (let i = 0; i < audioPlayer.duration; i += 12 + Math.random() * 6) {
-            sentences.push({
-              start: i,
-              end: Math.min(i + 8 + Math.random() * 4, audioPlayer.duration),
-            });
-          }
-        }
-        currentSentenceIndex = 0;
-      }
-
       async function detectSilenceBoundaries(file) {
-        try {
-          // If LRC data is already available, use it instead of silence detection
-          if (lrcLoaded && lrcData.length > 0) {
-            updateStatus('Using LRC-based sentence boundaries...', 'stopped');
-            generateSentencesFromLrc();
-            updateStatus(
-              `Using ${sentences.length} LRC-based sentence segments`,
-              'stopped'
-            );
-
-            // Visualize segments on progress bar
-            setTimeout(() => visualizeSegments(), 100);
-            return sentences;
-          }
-
-          updateStatus('Analyzing audio for sentence boundaries...', 'stopped');
-
-          // Initialize AudioContext if not already done
-          if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          }
-
-          // Read file as ArrayBuffer
-          const arrayBuffer = await file.arrayBuffer();
-
-          // Decode audio data
-          audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-          // Analyze audio for silence boundaries
-          const silenceBoundaries = analyzeSilence(audioBuffer);
-
-          // Convert silence boundaries to sentence segments
-          sentences = createSentenceSegments(silenceBoundaries, audioBuffer.duration);
-
-          currentSentenceIndex = 0;
-
+        // Only process if LRC data is available
+        if (lrcLoaded && lrcData.length > 0) {
+          updateStatus('Using LRC-based sentence boundaries...', 'stopped');
+          generateSentencesFromLrc();
           updateStatus(
-            `Found ${sentences.length} auto-detected sentence segments`,
+            `Using ${sentences.length} LRC-based sentence segments`,
             'stopped'
           );
 
           // Visualize segments on progress bar
-          setTimeout(() => visualizeSegments(), 100); // Small delay to ensure audio duration is available
-
+          setTimeout(() => visualizeSegments(), 100);
           return sentences;
-        } catch (error) {
-          console.error('Error in sentence boundary detection:', error);
-          updateStatus('Sentence detection failed, using fallback segments', 'stopped');
-          // Fall back to mock sentences
-          generateMockSentences();
+        } else {
+          // If no LRC, just initialize empty sentences array
+          sentences = [];
+          currentSentenceIndex = 0;
+          updateStatus('No LRC file loaded. Using simple 5-second navigation.', 'stopped');
           return sentences;
-        }
-      }
-
-      function analyzeSilence(audioBuffer) {
-        const frameSize = Math.floor(audioBuffer.sampleRate * 0.1); // 100ms frames
-        const silenceThreshold = 0.02; // Amplitude threshold for silence
-        const minSilenceDuration = 0.3; // 300ms minimum silence duration
-        const minSilenceFrames = Math.floor(minSilenceDuration / 0.1);
-
-        const channelData = audioBuffer.getChannelData(0); // Use first channel
-        const silenceBoundaries = [];
-
-        let silenceFrameCount = 0;
-        let silenceStartTime = 0;
-        let inSilence = false;
-
-        // Analyze audio in 100ms frames
-        for (let i = 0; i < channelData.length; i += frameSize) {
-          const frameEnd = Math.min(i + frameSize, channelData.length);
-
-          // Calculate RMS amplitude for this frame
-          let sumSquares = 0;
-          for (let j = i; j < frameEnd; j++) {
-            sumSquares += channelData[j] * channelData[j];
-          }
-          const rms = Math.sqrt(sumSquares / (frameEnd - i));
-
-          const currentTime = i / audioBuffer.sampleRate;
-
-          if (rms < silenceThreshold) {
-            // This frame is silent
-            if (!inSilence) {
-              // Start of silence
-              inSilence = true;
-              silenceStartTime = currentTime;
-              silenceFrameCount = 1;
-            } else {
-              silenceFrameCount++;
-            }
-          } else {
-            // This frame is not silent
-            if (inSilence && silenceFrameCount >= minSilenceFrames) {
-              // End of significant silence period
-              silenceBoundaries.push({
-                start: silenceStartTime,
-                end: currentTime,
-              });
-            }
-            inSilence = false;
-            silenceFrameCount = 0;
-          }
-        }
-
-        // Handle silence at the end of the audio
-        if (inSilence && silenceFrameCount >= minSilenceFrames) {
-          silenceBoundaries.push({
-            start: silenceStartTime,
-            end: audioBuffer.duration,
-          });
-        }
-
-        return silenceBoundaries;
-      }
-
-      function createSentenceSegments(silenceBoundaries, totalDuration) {
-        const segments = [];
-        let lastEnd = 0;
-
-        // Create segments between silence periods
-        for (const silence of silenceBoundaries) {
-          if (silence.start - lastEnd > 1.0) {
-            // Only create segments > 1 second
-            segments.push({
-              start: lastEnd,
-              end: silence.start,
-            });
-          }
-          lastEnd = silence.end;
-        }
-
-        // Add final segment if there's significant audio after the last silence
-        if (totalDuration - lastEnd > 1.0) {
-          segments.push({
-            start: lastEnd,
-            end: totalDuration,
-          });
-        }
-
-        // If no segments found, create one segment for the entire audio
-        if (segments.length === 0) {
-          segments.push({
-            start: 0,
-            end: totalDuration,
-          });
         }
 
         return segments;
@@ -1925,29 +1794,55 @@
       // ================================
 
       function playPreviousSentence() {
-        previousSentence();
-        // Auto-play the selected sentence
-        if (audioPlayer.src && sentences.length > 0) {
-          if (sentenceBysentenceMode) {
-            playSingleSentence();
-          } else {
+        if (!lrcLoaded) {
+          // No LRC - just move 3 seconds back
+          const newTime = Math.max(0, audioPlayer.currentTime - 3);
+          audioPlayer.currentTime = newTime;
+          updateStatus('Moved back 3 seconds', isPlaying ? 'playing' : 'paused');
+          // Resume playback if it was playing
+          if (!audioPlayer.paused) {
             audioPlayer.play().catch((error) => {
               console.error('Error playing audio:', error);
             });
+          }
+        } else {
+          previousSentence();
+          // Auto-play the selected sentence
+          if (audioPlayer.src && sentences.length > 0) {
+            if (sentenceBysentenceMode) {
+              playSingleSentence();
+            } else {
+              audioPlayer.play().catch((error) => {
+                console.error('Error playing audio:', error);
+              });
+            }
           }
         }
       }
 
       function playNextSentence() {
-        nextSentence();
-        // Auto-play the selected sentence
-        if (audioPlayer.src && sentences.length > 0) {
-          if (sentenceBysentenceMode) {
-            playSingleSentence();
-          } else {
+        if (!lrcLoaded) {
+          // No LRC - just move 3 seconds forward
+          const newTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 3);
+          audioPlayer.currentTime = newTime;
+          updateStatus('Moved forward 3 seconds', isPlaying ? 'playing' : 'paused');
+          // Resume playback if it was playing
+          if (!audioPlayer.paused) {
             audioPlayer.play().catch((error) => {
               console.error('Error playing audio:', error);
             });
+          }
+        } else {
+          nextSentence();
+          // Auto-play the selected sentence
+          if (audioPlayer.src && sentences.length > 0) {
+            if (sentenceBysentenceMode) {
+              playSingleSentence();
+            } else {
+              audioPlayer.play().catch((error) => {
+                console.error('Error playing audio:', error);
+              });
+            }
           }
         }
       }
@@ -2002,54 +1897,18 @@
           sentenceEndTimer = null;
         }
 
-        if (sentences.length === 0) {
-          // If no sentences defined, go back 10 seconds
-          audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
-          updateStatus('Skipped back 10 seconds', isPlaying ? 'playing' : 'paused');
-          return;
-        }
-
-        // Determine behavior based on playback state
-        let targetIndex;
-        let isRepeat = false;
-
-        if (audioPlayer.paused) {
-          // If NOT playing: Always restart current sentence (repeat behavior)
-          targetIndex = currentSentenceIndex;
-          isRepeat = true;
-        } else {
-          // If playing: Go to previous sentence, or restart current if more than 2 seconds in
-          if (audioPlayer.currentTime - sentences[currentSentenceIndex].start > 2.0) {
-            // If more than 2 seconds into current segment, restart current segment
-            targetIndex = currentSentenceIndex;
-            isRepeat = true;
-          } else {
-            // Go to previous sentence
-            targetIndex = currentSentenceIndex - 1;
-            isRepeat = false;
+        if (lrcLoaded && sentences.length > 0) {
+          // If we have LRC data, use sentence navigation
+          currentSentenceIndex = Math.max(0, currentSentenceIndex - 1);
+          if (audioPlayer.src) {
+            audioPlayer.currentTime = sentences[currentSentenceIndex].start;
+            updateCurrentSegmentMarker();
           }
-        }
-
-        if (targetIndex >= 0) {
-          currentSentenceIndex = targetIndex;
-          audioPlayer.currentTime = sentences[currentSentenceIndex].start;
-          updateCurrentSegmentMarker();
-          const duration =
-            sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
-
-          const action = isRepeat ? 'Repeating' : 'Previous';
-          updateStatus(
-            `${action} sentence ${currentSentenceIndex + 1}/${
-              sentences.length
-            } (${formatTime(duration)})`,
-            isPlaying ? 'playing' : 'paused'
-          );
         } else {
-          // Go to beginning of audio
-          currentSentenceIndex = 0;
-          audioPlayer.currentTime = 0;
-          updateCurrentSegmentMarker();
-          updateStatus('Beginning of audio', isPlaying ? 'playing' : 'paused');
+          // No LRC - just move 5 seconds back
+          const newTime = Math.max(0, audioPlayer.currentTime - 5);
+          audioPlayer.currentTime = newTime;
+          updateStatus('Moved back 5 seconds', isPlaying ? 'playing' : 'paused');
         }
 
         // If in sentence-by-sentence mode and audio was playing, play the new sentence
@@ -2065,34 +1924,18 @@
           sentenceEndTimer = null;
         }
 
-        if (sentences.length === 0) {
-          // If no sentences defined, go forward 10 seconds
-          audioPlayer.currentTime = Math.min(
-            audioPlayer.duration,
-            audioPlayer.currentTime + 10
-          );
-          updateStatus('Skipped forward 10 seconds', isPlaying ? 'playing' : 'paused');
-          return;
-        }
-
-        if (currentSentenceIndex < sentences.length - 1) {
-          currentSentenceIndex++;
-          audioPlayer.currentTime = sentences[currentSentenceIndex].start;
-          updateCurrentSegmentMarker();
-          const duration =
-            sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
-          updateStatus(
-            `Segment ${currentSentenceIndex + 1}/${sentences.length} (${formatTime(
-              duration
-            )})`,
-            isPlaying ? 'playing' : 'paused'
-          );
-        } else {
-          // Go to end of audio or last segment end
-          if (sentences[currentSentenceIndex]) {
-            audioPlayer.currentTime = sentences[currentSentenceIndex].end - 0.1; // Slightly before end
+        if (lrcLoaded && sentences.length > 0) {
+          // If we have LRC data, use sentence navigation
+          currentSentenceIndex = Math.min(sentences.length - 1, currentSentenceIndex + 1);
+          if (audioPlayer.src) {
+            audioPlayer.currentTime = sentences[currentSentenceIndex].start;
+            updateCurrentSegmentMarker();
           }
-          updateStatus('End of audio', isPlaying ? 'playing' : 'paused');
+        } else {
+          // No LRC - just move 5 seconds forward
+          const newTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 5);
+          audioPlayer.currentTime = newTime;
+          updateStatus('Moved forward 5 seconds', isPlaying ? 'playing' : 'paused');
         }
 
         // If in sentence-by-sentence mode and audio was playing, play the new sentence
