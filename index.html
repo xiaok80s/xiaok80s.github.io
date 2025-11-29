@@ -792,9 +792,38 @@
         );
       }
 
-      function handleFileButtonClick(event) {
+      async function handleFileButtonClick(event) {
         event.preventDefault();
-        document.getElementById('bothFilesInput').click();
+        
+        // Try to use the File System Access API if available (Desktop Chrome/Edge)
+        // This API allows remembering the last location via the 'id' parameter
+        if (window.showOpenFilePicker) {
+            try {
+                const handles = await window.showOpenFilePicker({
+                    id: 'dictice-player-location', // Browser remembers directory for this ID
+                    multiple: true,
+                    types: [{
+                        description: 'Audio & Lyrics',
+                        accept: {
+                            'audio/*': ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'],
+                            'text/plain': ['.lrc', '.txt']
+                        }
+                    }]
+                });
+                
+                const files = await Promise.all(handles.map(h => h.getFile()));
+                processFiles(files);
+            } catch (err) {
+                // Ignore user cancellation (AbortError)
+                if (err.name !== 'AbortError') {
+                    console.warn('File picker failed, falling back to input:', err);
+                    document.getElementById('bothFilesInput').click();
+                }
+            }
+        } else {
+            // Fallback for Safari/Firefox/Mobile
+            document.getElementById('bothFilesInput').click();
+        }
       }
 
       function clearCurrentAudioAndLyrics() {
@@ -821,11 +850,17 @@
 
       function loadBothFiles(event) {
         const files = Array.from(event.target.files);
+        processFiles(files);
+        event.target.value = '';
+      }
+
+      function processFiles(files) {
         if (files.length === 0) return;
 
         clearCurrentAudioAndLyrics();
 
-        let audioFile = files.find(f => f.type.startsWith('audio/'));
+        // Improved detection to handle cases where MIME type might be missing
+        let audioFile = files.find(f => f.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(f.name));
         let lrcFile = files.find(f => f.name.toLowerCase().endsWith('.lrc') || f.name.toLowerCase().endsWith('.txt'));
 
         if (audioFile) {
@@ -835,15 +870,12 @@
                 } else {
                     // Only audio loaded
                     updateStatus('Audio loaded. No lyrics.', 'stopped');
-                    // If only audio, we might want to generate dummy sentences or just allow normal play
-                    // For now, let's create one big sentence or handle "no lyrics" mode
                     sentences = [{start: 0, end: audioPlayer.duration, text: "Full Audio"}];
                     enableControls();
                     audioPlayer.play();
                 }
             });
         }
-        event.target.value = '';
       }
 
       function loadAudioFileInternal(file, callback) {
