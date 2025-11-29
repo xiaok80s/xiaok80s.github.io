@@ -772,7 +772,8 @@
 
       // Sentence-by-sentence playback
       let sentenceMode = true; 
-      const PADDING_TIME = 0.05; // Seconds to start earlier
+      const PADDING_START_TIME = 0.1; // Seconds to start earlier
+      const PADDING_END_TIME = 0.1; // Seconds to start earlier
 
       // Initialize event listeners
       audioPlayer.addEventListener('timeupdate', updateProgress);
@@ -940,17 +941,19 @@
             const next = lrcData[i + 1];
             
             // Start a bit earlier
-            let start = Math.max(0, current.time - PADDING_TIME);
+            let start = Math.max(0, current.time - PADDING_START_TIME);
             
             // End at the start of the next line (or end of audio)
             // We don't subtract padding from end, to ensure we hear the full line even if it runs late
-            let end = next ? next.time : audioPlayer.duration;
+            let end = next ? (next.time - PADDING_END_TIME) : audioPlayer.duration;
             
             sentences.push({
                 start: start,
                 end: end,
                 text: current.text
             });
+
+            console.log(JSON.stringify(sentences[sentences.length - 1]));
         }
       }
 
