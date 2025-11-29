@@ -5,27 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Audio Player</title>
 
-    <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Audio Player" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#4a90e2" />
 
-    <!-- PWA Icons -->
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMjAiIGZpbGw9IiM0YTkwZTIiLz4KPHN2ZyB4PSI0NSIgeT0iNDUiIHdpZHRoPSI5MCIgaGVpZ2h0PSI5MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik04IDV2MTRsNy03eiIvPgo8L3N2Zz4KPC9zdmc+" />
+      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIyMCIgZmlsbD0iIzRhOTBlMiIvPjxzdmcgeD0iNDUiIHk9IjQ1IiB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik04IDV2MTRsNy03eiIvPjwvc3ZnPjwvc3ZnPg==" />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzRhOTBlMiIvPgo8c3ZnIHg9IjgiIHk9IjgiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik04IDV2MTRsNy03eiIvPgo8L3N2Zz4KPC9zdmc+" />
+      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjNGE5MGUyIi8+PHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik04IDV2MTRsNy03eiIvPjwvc3ZnPjwvc3ZnPg==" />
 
-    <!-- PWA Manifest -->
     <link
       rel="manifest"
-      href="data:application/json;base64,ewogICJuYW1lIjogIkF1ZGlvIFBsYXllciIsCiAgInNob3J0X25hbWUiOiAiQXVkaW8gUGxheWVyIiwKICAiZGVzY3JpcHRpb24iOiAiQSBtaW5pbWFsIGF1ZGlvIHBsYXllciB3aXRoIHNlbnRlbmNlIGRldGVjdGlvbiBhbmQgc3VidGl0bGUgc3VwcG9ydCIsCiAgInN0YXJ0X3VybCI6ICIuLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2Y1ZjdmYSIsCiAgInRoZW1lX2NvbG9yIjogIiM0YTkwZTIiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlOVEV5SWlCb1pXbG5hSFE5SWpVeE1pSWlJSFpwWlhkQ2IzZzlJakFnTUNBMU1USWdOVEV5SWlCbWFXeHNQU0p1YjI1bElpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaVBnbzhjbVZqZENCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlpSUhKNFBTSXlNQ0lpSUdacGJHdzlJaU0wWVRrd1pUSWlMejRLUEhOMlp5QjRQU0k0TWlJZ2VUMGlPREVpSUhkcFpIUm9QU0l6TkRnaUlHaGxhV2RvZEQwaU16UTRJaUIyYVdWM1FtOTRQU0l3SURBZ01qUWdNalFpSUdacGJHdzlJbmRvYVhSbElqNEtQSEJoZEdnZ1pEMGlUVGcySURWMk1UUnNOeTAzZWlJdlBnbzhMM04yWno0S1BDOXpkbWMrIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlNVGd3SWlCb1pXbG5hSFE5SWpFNE1DSWlJSFpwWlhkQ2IzZzlJakFnTUNBeE9EQWdNVGd3SWlCbWFXeHNQU0p1YjI1bElpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaVBnbzhjbVZqZENCM2FXUjBhRDBpTVRnd0lpQm9aV2xuYUhROUlqRTRNQ0lpSUhKNFBTSXlNQ0lpSUdacGJHdzlJaU0wWVRrd1pUSWlMejRLUEhOMlp5QjRQU0kwTlNJZ2VUMGlORFVpSUhkcFpIUm9QU0k1TUNJZ2FHVnBaMmgwUFNJNU1DSWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lpSUdacGJHdzlJbmRvYVhSbElqNEtQSEJoZEdnZ1pEMGlUVGdnTldZeE5HeDBOeTAzZWlJdlBnbzhMM04yWno0S1BDOXpkbWMrIiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0sCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0Igp9" />
+      href="data:application/json;base64,eyJuYW1lIjogIkF1ZGlvIFBsYXllciIsICJzaG9ydF9uYW1lIjogIkF1ZGlvIFBsYXllciIsICJkZXNjcmlwdGlvbiI6ICJBIG1pbmltYWwgYXVkaW8gcGxheWVyIHdpdGggc2VudGVuY2UgZGV0ZWN0aW9uIGFuZCBzdWJ0aXRsZSBzdXBwb3J0IiwgInN0YXJ0X3VybCI6ICIuIiwgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmNWY3ZmEiLCAidGhlbWVfY29sb3IiOiAiIzRhOTBlMiIsICJpY29ucyI6IFt7InNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlOVEV5SWlCb1pXbG5hSFE5SWpVeE1pSWdkbWxsZDBKdmVEMGlNQ0F3SURVeE1pQTFNVElpSUdacGJHdzlJbTV2Ym1VaUlIaHRiRzV6UFNKb2RIUndPaTh2ZDNkM0xuY3pMbTl5Wnk4eU1EQXdMM04yWnlJK1BISmxZM1FnZDJsa2RHZzlJalV4TWlJZ2FHVnBaMmgwUFNJMU1USWlJSEo0UFNJMU1DSWdabWxzYkQwaUl6UmhPVEJsTWlJdlBqeHpkbWNnZUQwaU1USTRJaUI1UFNJeE1qZ2lJSGRwWkhSb1BTSXlOVFlpSUdobGFXZG9kRDBpTWpVMklpQjJhV1YzUW05NFBTSXdJREFnTWpRZ01qUWlJR1pwYkd3OUluZG9hWFJsSWo0OGNHRjBhQ0JrUFNKTk9DQTFkakUwYkRjdE4zb2lMejQ4TDNOMlp6NDhMM04yWno0PSIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCJ9LCB7InNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlNVGt5SWlCb1pXbG5hSFE5SWpFNU1pSWdkbWxsZDBKdmVEMGlNQ0F3SURFNU1pQXhPVElpSUdacGJHdzlJbTV2Ym1VaUlIaHRiRzV6UFNKb2RIUndPaTh2ZDNkM0xuY3pMbTl5Wnk4eU1EQXdMM04yWnlJK1BISmxZM1FnZDJsa2RHZzlJakU1TWlJZ2FHVnBaMmgwUFNJeE9USWlJSEo0UFNJeU1DSWdabWxzYkQwaUl6UmhPVEJsTWlJdlBqeHpkbWNnZUQwaU5EZ2lJSGs5SWpRNElpQjNhV1IwYUQwaU9UWWlJR2hsYVdkb2REMGlPVFlpSUhacFpYZENiM2c5SWpBZ01DQXlOQ0F5TkNJZ1ptbHNiRDBpZDJocGRHVWlQanh3WVhSb0lHUTlJazA0SURWMk1UUnNOeTAzZWlJdlBqd3ZjM1puUGp3dmMzWm5QZz09IiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIn1dLCAib3JpZW50YXRpb24iOiAicG9ydHJhaXQifQ==" />
     <style>
       * {
         margin: 0;
@@ -191,6 +188,16 @@
         display: flex;
       }
 
+      .auto-stop-toggle-container {
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .auto-stop-toggle-container.visible {
+        display: flex;
+      }
+
       .lyrics-toggle {
         background: #17a2b8;
         box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
@@ -338,28 +345,6 @@
 
       input[type='file'] {
         display: none;
-      }
-
-      .status {
-        margin-top: 20px;
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 0.9rem;
-      }
-
-      .status.playing {
-        background: #d4edda;
-        color: #155724;
-      }
-
-      .status.paused {
-        background: #fff3cd;
-        color: #856404;
-      }
-
-      .status.stopped {
-        background: #f8d7da;
-        color: #721c24;
       }
 
       .current-text {
@@ -686,16 +671,14 @@
       </div>
 
       <div class="controls">
-        <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
-
         <button class="nav-button" onclick="playPreviousSentence()" disabled>Prev</button>
+
+        <button class="nav-button" onclick="playNextSentence()" disabled>Next</button>
 
         <button id="playPauseBtn" onclick="togglePlayPause()" disabled>Play</button>
       </div>
 
-      <!-- Toggle Buttons Container -->
       <div class="toggle-buttons-container">
-        <!-- Auto Stop Toggle -->
         <div class="auto-stop-toggle-container">
           <button
             class="lyrics-toggle active"
@@ -704,7 +687,6 @@
             <span id="autoStopToggleText">Sentence On</span>
           </button>
         </div>
-        <!-- Lyrics Toggle (only visible when LRC loaded) -->
         <div class="lyrics-toggle-container" id="lyricsToggleContainer">
           <button class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyrics()">
             <span id="lyricsToggleText">Show Lyrics</span>
@@ -749,14 +731,12 @@
         </div>
       </div>
 
-      <!-- Current Text Display -->
       <div class="current-text" id="currentText" style="display: none">
         <div class="text-content" id="textContent">
           Load audio and LRC files together to see synchronized text here.
         </div>
       </div>
 
-      <!-- Hidden file inputs -->
       <input
         type="file"
         id="bothFilesInput"
@@ -764,6 +744,26 @@
         multiple
         onchange="loadBothFiles(event)" />
       <audio id="audioPlayer" onended="onAudioEnded()" loop></audio>
+
+      <div id="helpOverlay">
+        <div class="help-content">
+          <h3>⌨️ Keyboard Shortcuts</h3>
+          <div class="shortcut-list">
+            <div><kbd>J</kbd> Play Previous</div>
+            <div><kbd>L</kbd> Play Next</div>
+            <div><kbd>K</kbd> Play/Pause</div>
+            <div><kbd>U</kbd> Speed Down</div>
+            <div><kbd>N</kbd> Speed Up</div>
+            <div><kbd>M</kbd> Reset Speed</div>
+            <div><kbd>A</kbd> Toggle Auto-Stop</div>
+            <div><kbd>O</kbd> Load Files</div>
+            <div><kbd>T</kbd> Toggle Lyrics</div>
+            <div><kbd>H</kbd> Toggle Help</div>
+            <div><kbd>Esc</kbd> Close Help</div>
+          </div>
+          <p class="help-note">💡 Click anywhere or press Esc to close</p>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -772,33 +772,33 @@
       let progressFill = document.getElementById('progressFill');
       let currentTimeSpan = document.getElementById('currentTime');
       let durationSpan = document.getElementById('duration');
-      let statusDiv = document.getElementById('status');
       let fileInfoDiv = document.getElementById('fileInfo');
+      let currentTextDiv = document.getElementById('currentText');
+      let textContentDiv = document.getElementById('textContent');
 
       let isPlaying = false;
       let currentSentenceIndex = 0;
-      let sentences = []; // Will store sentence timestamps detected from silence
+      let sentences = []; 
       let currentFileName = '';
-      let audioContext = null;
-      let audioBuffer = null;
-
+      
       // LRC-related variables
-      let lrcData = []; // Will store parsed LRC subtitle data
+      let lrcData = []; 
       let currentLrcIndex = -1;
       let lrcLoaded = false;
-      let lyricsVisible = false; // Track lyrics display state
+      let lyricsVisible = false; 
 
       // Sentence-by-sentence playback
-      let sentenceBysentenceMode = true; // Default to sentence mode on
-      let sentenceEndTimer = null;
+      let sentenceMode = true; 
+      const PADDING_TIME = 0.2; // Seconds to start earlier
 
       // Initialize event listeners
       audioPlayer.addEventListener('timeupdate', updateProgress);
       audioPlayer.addEventListener('loadedmetadata', onAudioLoaded);
       audioPlayer.addEventListener('play', onPlay);
       audioPlayer.addEventListener('pause', onPause);
+      audioPlayer.addEventListener('ended', onAudioEnded);
 
-      // Initialize lyrics toggle visibility (hidden by default since lrcLoaded = false)
+      // Initialize lyrics toggle visibility
       updateLyricsToggleVisibility();
 
       // Utility function to detect iOS
@@ -811,1366 +811,357 @@
 
       function handleFileButtonClick(event) {
         event.preventDefault();
-        event.stopPropagation();
-
-        // Debug logging for iOS Safari
-        if (isIOS()) {
-          console.log('iOS detected, attempting file selection...');
-        }
-
-        openBothFiles();
+        document.getElementById('bothFilesInput').click();
       }
 
       function clearCurrentAudioAndLyrics() {
-        // Pause the audio
-        if (audioPlayer) {
-          audioPlayer.pause();
-        }
-
-        // Clear the audio source and revoke blob URL if exists
-        if (audioPlayer && audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audioPlayer.src);
-        }
-        if (audioPlayer) {
-          audioPlayer.src = '';
-          audioPlayer.removeAttribute('src');
-        }
-
-        // Reset all state variables
+        audioPlayer.pause();
+        audioPlayer.src = '';
         isPlaying = false;
         currentSentenceIndex = 0;
         sentences = [];
-        currentFileName = '';
         lrcData = [];
-        currentLrcIndex = -1;
         lrcLoaded = false;
-
-        // Reset sentence-by-sentence mode state
-        sentenceBysentenceMode = true; // Default to sentence mode on
-        if (sentenceEndTimer) {
-          clearTimeout(sentenceEndTimer);
-          sentenceEndTimer = null;
-        }
-        lastSentenceIndex = -1;
-
-        // Clear UI elements
-        if (fileInfoDiv) {
-          fileInfoDiv.textContent = 'No audio file selected';
-        }
-        if (statusDiv) {
-          statusDiv.textContent = 'Ready to load files';
-        }
-        if (currentTimeSpan) {
-          currentTimeSpan.textContent = '0:00';
-        }
-        if (durationSpan) {
-          durationSpan.textContent = '0:00';
-        }
-        if (progressFill) {
-          progressFill.style.width = '0%';
-        }
-
-        // Reset speed controls
-        const speedDisplay = document.getElementById('speedDisplay');
-        if (speedDisplay) {
-          speedDisplay.textContent = '1.0x';
-        }
-
-        // Clear lyrics display
-        const lyricsContainer = document.getElementById('lyricsDisplay');
-        if (lyricsContainer) {
-          lyricsContainer.innerHTML = '';
-          lyricsContainer.style.display = 'none';
-        }
-
-        // Reset lyrics toggle
         lyricsVisible = false;
-        const lyricsToggleText = document.getElementById('lyricsToggleText');
-        if (lyricsToggleText) {
-          lyricsToggleText.textContent = 'Show Lyrics';
-        }
-
-        // Reset auto-stop toggle to default state (sentence mode on)
-        const autoStopToggleBtn = document.getElementById('autoStopToggleBtn');
-        const autoStopToggleText = document.getElementById('autoStopToggleText');
-        if (autoStopToggleBtn && autoStopToggleText) {
-          autoStopToggleBtn.classList.add('active');
-          autoStopToggleText.textContent = 'Sentence On';
-        }
-
-        // Update lyrics toggle visibility based on lrcLoaded status
+        
+        fileInfoDiv.textContent = 'No audio file selected';
+        currentTimeSpan.textContent = '0:00';
+        durationSpan.textContent = '0:00';
+        progressFill.style.width = '0%';
+        
+        currentTextDiv.style.display = 'none';
+        textContentDiv.textContent = 'Load audio and LRC files together to see synchronized text here.';
+        
         updateLyricsToggleVisibility();
-
-        // Remove sentence markers from progress bar
-        const progressContainer = document.querySelector('.progress-container');
-        if (progressContainer) {
-          const markers = progressContainer.querySelectorAll('.sentence-marker');
-          markers.forEach((marker) => marker.remove());
-        }
-
-        // Disable control buttons
-        const navButtons = document.querySelectorAll('.nav-button');
-        navButtons.forEach((button) => {
-          button.disabled = true;
-        });
-
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        if (playPauseBtn) {
-          playPauseBtn.disabled = true;
-          playPauseBtn.textContent = 'Play';
-        }
-
-        // Clean up audio context
-        if (audioContext) {
-          audioContext.close();
-          audioContext = null;
-        }
-        audioBuffer = null;
-
-        console.log('Cleared all audio and lyrics data');
+        disableControls();
       }
 
-      function openBothFiles() {
-        const fileInput = document.getElementById('bothFilesInput');
-
-        if (isIOS()) {
-          // For iOS, we need to ensure the click happens in a user gesture context
-          // Reset the input value to ensure change event fires even for same files
-          fileInput.value = '';
-
-          // Use a timeout to ensure we're still in the user gesture context
-          setTimeout(() => {
-            fileInput.click();
-          }, 0);
-        } else {
-          // For other browsers, direct click usually works
-          try {
-            fileInput.value = ''; // Reset for re-selection of same files
-            fileInput.click();
-          } catch (error) {
-            console.log('Click failed, trying alternative approach:', error);
-            // Fallback - create a new input element
-            const newInput = document.createElement('input');
-            newInput.type = 'file';
-            newInput.accept = fileInput.accept;
-            newInput.multiple = fileInput.multiple;
-            newInput.style.position = 'absolute';
-            newInput.style.left = '-9999px';
-            newInput.onchange = function (event) {
-              loadBothFiles(event);
-              document.body.removeChild(newInput);
-            };
-            document.body.appendChild(newInput);
-            newInput.click();
-          }
-        }
-      }
-
-      /**
-       * Handles loading both audio and LRC files simultaneously
-       * @param {Event} event - File input change event with multiple files
-       */
       function loadBothFiles(event) {
         const files = Array.from(event.target.files);
-
         if (files.length === 0) return;
 
-        // Clear any existing audio and lyrics first when new files are selected
         clearCurrentAudioAndLyrics();
 
-        let audioFile = null;
-        let lrcFile = null;
+        let audioFile = files.find(f => f.type.startsWith('audio/'));
+        let lrcFile = files.find(f => f.name.toLowerCase().endsWith('.lrc') || f.name.toLowerCase().endsWith('.txt'));
 
-        // Separate audio and LRC files
-        files.forEach((file) => {
-          if (file.type.startsWith('audio/')) {
-            audioFile = file;
-          } else if (
-            file.name.toLowerCase().endsWith('.lrc') ||
-            file.name.toLowerCase().endsWith('.txt')
-          ) {
-            lrcFile = file;
-          }
-        });
-
-        // Handle different file combinations gracefully
-        if (audioFile && lrcFile) {
-          // Both files selected - load them together
-          updateStatus('Loading audio and subtitle files...', 'stopped');
-          loadAudioFileInternal(audioFile, () => {
-            loadLrcFileInternal(lrcFile);
-          });
-        } else if (audioFile) {
-          // Only audio file selected - load it normally
-          updateStatus('Loading audio file...', 'stopped');
-          loadAudioFileInternal(audioFile);
-        } else if (lrcFile) {
-          // Only LRC file selected - load it if audio is already loaded
-          if (audioPlayer.src) {
-            loadLrcFileInternal(lrcFile);
-          } else {
-            updateStatus('Load an audio file first, then add subtitles', 'stopped');
-          }
+        if (audioFile) {
+            loadAudioFileInternal(audioFile, () => {
+                if (lrcFile) {
+                    loadLrcFileInternal(lrcFile);
+                } else {
+                    // Only audio loaded
+                    updateStatus('Audio loaded. No lyrics.', 'stopped');
+                    // If only audio, we might want to generate dummy sentences or just allow normal play
+                    // For now, let's create one big sentence or handle "no lyrics" mode
+                    sentences = [{start: 0, end: audioPlayer.duration, text: "Full Audio"}];
+                    enableControls();
+                    audioPlayer.play();
+                }
+            });
         }
-
-        // Reset the input
         event.target.value = '';
       }
 
-      /**
-       * Attempts to automatically find and load a matching LRC file
-       * @param {File} audioFile - The loaded audio file
-       */
-      function tryAutoLoadLrc(audioFile) {
-        // This would require additional file system access which browsers don't allow
-        // But we can show a helpful message
-        const baseName = audioFile.name.replace(/\.[^/.]+$/, ''); // Remove extension
-        updateStatus(
-          `Audio loaded. To add subtitles, look for "${baseName}.lrc" and load it using the LRC button below.`,
-          'stopped'
-        );
-      }
-
-      /**
-       * Internal function to load audio file with optional callback
-       * @param {File} file - Audio file to load
-       * @param {Function} callback - Optional callback after loading
-       */
       function loadAudioFileInternal(file, callback) {
-        if (!file) return;
-
-        // Validate file type
-        if (!file.type.startsWith('audio/')) {
-          updateStatus('Please select a valid audio file', 'stopped');
-          return;
-        }
-
-        // Clean up previous blob URL to prevent memory leaks
-        if (audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audioPlayer.src);
-        }
-
-        currentFileName = file.name;
         const url = URL.createObjectURL(file);
         audioPlayer.src = url;
-        audioPlayer.loop = true; // Enable continuous looping
-        audioPlayer.playbackRate = 1.0; // Reset playback speed
-
-        fileInfoDiv.innerHTML = `
-                  <strong>📄 ${currentFileName}</strong>
-              `;
-
-        if (!callback) {
-          updateStatus('Loading audio file...', 'stopped');
-        }
-
-        // Reset player state
-        isPlaying = false;
-        currentSentenceIndex = 0;
-        progressFill.style.width = '0%';
-        currentTimeSpan.textContent = '0:00';
-
-        // Reset LRC state when loading new audio file
-        lrcData = [];
-        lrcLoaded = false;
-        currentLrcIndex = -1;
-        lyricsVisible = false;
-
-        // Hide text display and update toggle visibility
-        document.getElementById('currentText').style.display = 'none';
-        updateLyricsToggleVisibility();
-
-        // Enable controls when metadata is loaded
-        audioPlayer.addEventListener('loadedmetadata', async function onMetadataLoaded() {
-          enableControls();
-          updateSpeedDisplay(); // Initialize speed display
-
-          if (!callback) {
-            updateStatus('Audio file ready to play', 'stopped');
-          }
-
-          // Perform silence detection to find sentence boundaries
-          await detectSilenceBoundaries(file);
-
-          // Call callback if provided
-          if (callback) {
-            callback();
-          }
-
-          // Auto-play the audio once it's loaded and processed
-          try {
-            await audioPlayer.play();
-            updateStatus('Auto-playing audio...', 'playing');
-          } catch (error) {
-            console.log('Auto-play prevented by browser policy:', error);
-            updateStatus('Audio ready to play (click Play to start)', 'stopped');
-          }
-
-          // Remove this specific listener to prevent multiple bindings
-          audioPlayer.removeEventListener('loadedmetadata', onMetadataLoaded);
-        });
-
-        // Handle loading errors
-        audioPlayer.addEventListener('error', function onError() {
-          updateStatus('Error loading audio file', 'stopped');
-          disableControls();
-          audioPlayer.removeEventListener('error', onError);
-        });
+        currentFileName = file.name;
+        fileInfoDiv.innerHTML = `<strong>📄 ${currentFileName}</strong>`;
+        
+        audioPlayer.onloadedmetadata = () => {
+            if (callback) callback();
+        };
       }
 
-      // ================================
-      // LRC FILE HANDLING FUNCTIONS
-      // ================================
-
-      /**
-       * Loads and parses LRC subtitle file
-       * @param {Event} event - File input change event
-       */
-      function loadLrcFile(event) {
-        const file = event.target.files[0];
-        if (file) {
-          loadLrcFileInternal(file);
-        }
-      }
-
-      /**
-       * Internal function to load LRC file
-       * @param {File} file - LRC file to load
-       */
       function loadLrcFileInternal(file) {
-        if (!file) return;
-
         const reader = new FileReader();
-        reader.onload = function (e) {
-          try {
+        reader.onload = (e) => {
             lrcData = parseLrcContent(e.target.result);
-            lrcLoaded = true;
+            if (lrcData.length > 0) {
+                lrcLoaded = true;
+                generateSentencesFromLrc();
+                updateStatus(`Loaded ${lrcData.length} lines.`, 'stopped');
+                updateLyricsToggleVisibility();
+                
+                // Hide lyrics initially as requested
+                lyricsVisible = false;
+                currentTextDiv.style.display = 'none';
+                document.getElementById('lyricsToggleBtn').classList.remove('active');
+                document.getElementById('lyricsToggleText').textContent = 'Show Lyrics';
 
-            // Show lyrics toggle button
-            updateLyricsToggleVisibility();
-
-            // Hide lyrics by default when LRC is loaded
-            lyricsVisible = false;
-            document.getElementById('currentText').style.display = 'none';
-
-            // Update toggle button state to show "Show Lyrics"
-            const toggleBtn = document.getElementById('lyricsToggleBtn');
-            const toggleText = document.getElementById('lyricsToggleText');
-            toggleBtn.classList.remove('active');
-            toggleText.textContent = 'Show Lyrics';
-
-            // Generate sentence boundaries from LRC data
-            generateSentencesFromLrc();
-
-            // Count enhanced LRC entries (with word-level timing)
-            const enhancedCount = lrcData.filter((entry) => entry.isEnhanced).length;
-            const enhancedText =
-              enhancedCount > 0 ? ` (${enhancedCount} with word-level timing)` : '';
-
-            updateStatus(
-              `Audio and subtitles ready! Found ${lrcData.length} subtitle lines${enhancedText}, ${sentences.length} sentence segments.`,
-              'stopped'
-            );
-
-            // Update text display if audio is playing
-            if (audioPlayer.currentTime > 0) {
-              updateCurrentText(audioPlayer.currentTime);
+                enableControls();
+                audioPlayer.play();
             }
-
-            // Visualize the new LRC-based segments
-            visualizeSegments();
-          } catch (error) {
-            console.error('Error parsing LRC file:', error);
-            updateStatus('Error parsing LRC file - please check format', 'stopped');
-          }
         };
         reader.readAsText(file);
       }
 
-      /**
-       * Generate sentence segments from LRC data
-       * This provides more accurate sentence boundaries than silence detection
-       */
-      function generateSentencesFromLrc() {
-        if (!lrcData || lrcData.length === 0) return;
-
-        sentences = [];
-        currentSentenceIndex = 0;
-
-        for (let i = 0; i < lrcData.length; i++) {
-          const currentEntry = lrcData[i];
-          const nextEntry = lrcData[i + 1];
-
-          // Calculate end time for this sentence with overlap
-          let endTime;
-          if (nextEntry) {
-            // Extend the current sentence to overlap with the next one by 300ms
-            const overlap = 0; // 50ms overlap
-            endTime = nextEntry.time + overlap;
-          } else {
-            // For the last entry, extend by 2.5 seconds or until audio end
-            endTime = Math.min(
-              currentEntry.time + 2.5,
-              audioPlayer.duration || currentEntry.time + 2.5
-            );
-          }
-
-          sentences.push({
-            start: currentEntry.time,
-            end: endTime,
-            text: currentEntry.text, // Store the text for reference
-          });
-        }
-
-        console.log(`Generated ${sentences.length} sentences from LRC data`);
-      }
-
-      /**
-       * Parses LRC file content into structured data, supporting Enhanced LRC format
-       * @param {string} content - Raw LRC file content
-       * @returns {Array} Array of {time, text, words} objects
-       */
       function parseLrcContent(content) {
         const lines = content.split('\n');
-        const lrcEntries = [];
-
-        lines.forEach((line) => {
-          // Match LRC format: [mm:ss.xx] or [mm:ss] text
-          const match = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\](.+)/);
-          if (match) {
-            const minutes = parseInt(match[1]);
-            const seconds = parseInt(match[2]);
-            const centiseconds = parseInt(match[3] || '0');
-            let text = match[4].trim();
-
-            const timeInSeconds = minutes * 60 + seconds + centiseconds / 100;
-
-            if (text) {
-              // Parse Enhanced LRC format for word-level timing
-              const wordTimings = parseWordTimings(text);
-
-              // Clean text for display (remove timing tags)
-              const cleanText = text.replace(/<\d{2}:\d{2}\.\d{2}>/g, '');
-
-              lrcEntries.push({
-                time: timeInSeconds,
-                text: cleanText,
-                words: wordTimings, // Array of {word, startTime} objects
-                isEnhanced: wordTimings.length > 0,
-              });
+        const data = [];
+        const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\](.*)/;
+        
+        for (const line of lines) {
+            const match = line.match(timeRegex);
+            if (match) {
+                const min = parseInt(match[1]);
+                const sec = parseInt(match[2]);
+                const ms = match[3] ? parseInt(match[3].padEnd(3, '0')) : 0; // Handle 2 or 3 digit ms
+                const time = min * 60 + sec + ms / 1000;
+                const text = match[4].trim();
+                if (text) { // Only add non-empty lines
+                    data.push({ time, text });
+                }
             }
-          }
-        });
-
-        // Sort by time to ensure proper order
-        return lrcEntries.sort((a, b) => a.time - b.time);
+        }
+        return data.sort((a, b) => a.time - b.time);
       }
 
-      /**
-       * Parse word-level timings from Enhanced LRC format
-       * @param {string} text - Text with embedded timing tags like <00:28.73>word<00:28.98>
-       * @returns {Array} Array of {word, startTime, endTime} objects
-       */
-      function parseWordTimings(text) {
-        const words = [];
-        // Enhanced LRC pattern: <mm:ss.xx>word or word<mm:ss.xx>
-        const enhancedPattern = /<(\d{2}):(\d{2})\.(\d{2})>([^<]*)/g;
-        let match;
-        let lastEndTime = null;
-
-        while ((match = enhancedPattern.exec(text)) !== null) {
-          const minutes = parseInt(match[1]);
-          const seconds = parseInt(match[2]);
-          const centiseconds = parseInt(match[3]);
-          const wordText = match[4].trim();
-
-          const startTime = minutes * 60 + seconds + centiseconds / 100;
-
-          if (wordText) {
-            // Split on spaces to handle multiple words between timing tags
-            const wordParts = wordText.split(/\s+/).filter((w) => w);
-
-            wordParts.forEach((word, index) => {
-              const wordStartTime = startTime + index * 0.1; // Estimate timing for multiple words
-              words.push({
-                word: word,
-                startTime: wordStartTime,
-                endTime: null, // Will be set when we know the next word's start time
-              });
-            });
-          }
-        }
-
-        // Set end times based on next word's start time
-        for (let i = 0; i < words.length - 1; i++) {
-          words[i].endTime = words[i + 1].startTime;
-        }
-
-        // Set end time for last word (estimate 0.5 seconds)
-        if (words.length > 0) {
-          words[words.length - 1].endTime = words[words.length - 1].startTime + 0.5;
-        }
-
-        return words;
-      }
-
-      /**
-       * Updates the current text display based on audio time with word-level highlighting
-       * @param {number} currentTime - Current audio playback time
-       */
-      function updateCurrentText(currentTime) {
-        if (!lrcLoaded || lrcData.length === 0) {
-          return;
-        }
-
-        let activeIndex = -1;
-
-        // Find the current subtitle line
+      function generateSentencesFromLrc() {
+        sentences = [];
         for (let i = 0; i < lrcData.length; i++) {
-          if (currentTime >= lrcData[i].time) {
-            activeIndex = i;
-          } else {
-            break;
-          }
+            const current = lrcData[i];
+            const next = lrcData[i + 1];
+            
+            // Start a bit earlier
+            let start = Math.max(0, current.time - PADDING_TIME);
+            
+            // End at the start of the next line (or end of audio)
+            // We don't subtract padding from end, to ensure we hear the full line even if it runs late
+            let end = next ? next.time : audioPlayer.duration;
+            
+            sentences.push({
+                start: start,
+                end: end,
+                text: current.text
+            });
         }
-
-        const textContent = document.getElementById('textContent');
-
-        if (activeIndex !== -1) {
-          const currentEntry = lrcData[activeIndex];
-
-          // Check if this is a new line or if we need to update word highlighting
-          if (activeIndex !== currentLrcIndex || currentEntry.isEnhanced) {
-            currentLrcIndex = activeIndex;
-
-            if (
-              currentEntry.isEnhanced &&
-              currentEntry.words &&
-              currentEntry.words.length > 0
-            ) {
-              // Enhanced LRC with word-level timing
-              displayEnhancedText(currentEntry, currentTime);
-            } else {
-              // Standard LRC
-              textContent.innerHTML = escapeHtml(currentEntry.text);
-              textContent.className = 'text-content highlighted';
-
-              // Remove highlight after animation for standard LRC
-              setTimeout(() => {
-                textContent.className = 'text-content';
-              }, 300);
-            }
-          } else if (currentEntry.isEnhanced && currentEntry.words) {
-            // Update word highlighting for already displayed enhanced text
-            displayEnhancedText(currentEntry, currentTime);
-          }
-        } else if (activeIndex === -1) {
-          textContent.innerHTML = 'Waiting for subtitles...';
-          textContent.className = 'text-content';
-        }
-      }
-
-      /**
-       * Display Enhanced LRC text with word-level highlighting
-       * @param {Object} entry - LRC entry with word timings
-       * @param {number} currentTime - Current playback time
-       */
-      function displayEnhancedText(entry, currentTime) {
-        const textContent = document.getElementById('textContent');
-        let html = '';
-
-        entry.words.forEach((wordObj, index) => {
-          const isCurrentWord =
-            currentTime >= wordObj.startTime &&
-            (wordObj.endTime ? currentTime < wordObj.endTime : true);
-
-          const wordClass = isCurrentWord ? 'word-highlight' : 'word-normal';
-          html += `<span class="${wordClass}">${escapeHtml(wordObj.word)}</span>`;
-
-          // Add space between words (except for last word)
-          if (index < entry.words.length - 1) {
-            html += ' ';
-          }
-        });
-
-        textContent.innerHTML = html;
-        textContent.className = 'text-content enhanced-lrc';
-      }
-
-      /**
-       * Escape HTML characters to prevent XSS
-       * @param {string} text - Text to escape
-       * @returns {string} Escaped text
-       */
-      function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-      }
-
-      function enableControls() {
-        const buttons = document.querySelectorAll(
-          'button:not([onclick*="openBothFiles"]):not([onclick*="openLrcFile"])'
-        );
-        buttons.forEach((btn) => (btn.disabled = false));
-      }
-
-      function disableControls() {
-        const buttons = document.querySelectorAll(
-          'button:not([onclick*="openBothFiles"]):not([onclick*="openLrcFile"])'
-        );
-        buttons.forEach((btn) => (btn.disabled = true));
-      }
-
-      function onPlay() {
-        isPlaying = true;
-        updateStatus('Playing', 'playing');
-        updatePlayPauseButton();
-        // Reset auto-stop flag when playback resumes
-        hasAutoStoppedForCurrentSentence = false;
-      }
-
-      function onPause() {
-        isPlaying = false;
-        // Clear sentence timer when paused
-        if (sentenceEndTimer) {
-          clearTimeout(sentenceEndTimer);
-          sentenceEndTimer = null;
-        }
-        updateStatus('Paused', 'paused');
-        updatePlayPauseButton();
       }
 
       function togglePlayPause() {
-        if (audioPlayer && audioPlayer.src) {
-          if (audioPlayer.paused) {
-            if (sentenceBysentenceMode) {
-              playSingleSentence();
+        if (audioPlayer.paused) {
+            if (sentenceMode && sentences.length > 0 && lrcLoaded) {
+                // In sentence mode, Play button repeats current sentence
+                playSingleSentence();
             } else {
-              audioPlayer.play().catch((error) => {
-                console.error('Error playing audio:', error);
-              });
+                audioPlayer.play();
             }
-          } else {
-            // Clear sentence timer when pausing manually
-            if (sentenceEndTimer) {
-              clearTimeout(sentenceEndTimer);
-              sentenceEndTimer = null;
-            }
-            audioPlayer.pause();
-          }
-        }
-      }
-
-      function updatePlayPauseButton() {
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        if (playPauseBtn) {
-          if (audioPlayer && !audioPlayer.paused && !audioPlayer.ended) {
-            playPauseBtn.textContent = 'Pause';
-          } else {
-            playPauseBtn.textContent = 'Play';
-          }
-        }
-      }
-
-      // ================================
-      // PLAYBACK SPEED CONTROL FUNCTIONS
-      // ================================
-
-      function decreaseSpeed() {
-        if (audioPlayer && audioPlayer.src) {
-          const newSpeed = Math.max(0.1, audioPlayer.playbackRate - 0.1);
-          audioPlayer.playbackRate = newSpeed;
-          updateSpeedDisplay();
-          updateStatus(
-            `Speed: ${newSpeed.toFixed(1)}x`,
-            isPlaying ? 'playing' : 'paused'
-          );
-        }
-      }
-
-      function increaseSpeed() {
-        if (audioPlayer && audioPlayer.src) {
-          const newSpeed = Math.min(3.0, audioPlayer.playbackRate + 0.1);
-          audioPlayer.playbackRate = newSpeed;
-          updateSpeedDisplay();
-          updateStatus(
-            `Speed: ${newSpeed.toFixed(1)}x`,
-            isPlaying ? 'playing' : 'paused'
-          );
-        }
-      }
-
-      function resetSpeed() {
-        if (audioPlayer && audioPlayer.src) {
-          audioPlayer.playbackRate = 1.0;
-          updateSpeedDisplay();
-          updateStatus('Speed reset to 1.0x', isPlaying ? 'playing' : 'paused');
-        }
-      }
-
-      function updateSpeedDisplay() {
-        const speedDisplay = document.getElementById('speedDisplay');
-        if (speedDisplay && audioPlayer) {
-          speedDisplay.textContent = `${audioPlayer.playbackRate.toFixed(1)}x`;
-        }
-      }
-
-      function onAudioEnded() {
-        isPlaying = false;
-        updateStatus('Finished', 'stopped');
-        progressFill.style.width = '100%';
-        updatePlayPauseButton();
-      }
-
-      function onAudioLoaded() {
-        durationSpan.textContent = formatTime(audioPlayer.duration);
-      }
-
-      // ================================
-      // LYRICS TOGGLE FUNCTIONALITY
-      // ================================
-
-      function toggleLyrics() {
-        const currentText = document.getElementById('currentText');
-        const toggleBtn = document.getElementById('lyricsToggleBtn');
-        const toggleText = document.getElementById('lyricsToggleText');
-
-        lyricsVisible = !lyricsVisible;
-
-        if (lyricsVisible && lrcLoaded) {
-          // Show lyrics
-          currentText.style.display = 'flex';
-          toggleBtn.classList.add('active');
-          toggleText.textContent = 'Hide Lyrics';
         } else {
-          // Hide lyrics
-          currentText.style.display = 'none';
-          toggleBtn.classList.remove('active');
-          toggleText.textContent = 'Show Lyrics';
-          lyricsVisible = false; // Ensure it's false if no LRC loaded
-        }
-      }
-
-      function toggleAutoStop() {
-        sentenceBysentenceMode = !sentenceBysentenceMode;
-
-        const toggleBtn = document.getElementById('autoStopToggleBtn');
-        const toggleText = document.getElementById('autoStopToggleText');
-
-        // Clear any existing timer
-        if (sentenceEndTimer) {
-          clearTimeout(sentenceEndTimer);
-          sentenceEndTimer = null;
-        }
-
-        if (sentenceBysentenceMode) {
-          // Enable sentence-by-sentence mode
-          toggleBtn.classList.add('active');
-          toggleText.textContent = 'Sentence On';
-
-          // If audio is currently playing, transition to sentence-by-sentence playback
-          const wasPlaying = !audioPlayer.paused;
-          if (wasPlaying) {
-            // First update the current sentence index based on current playback time
-            updateCurrentSentenceIndex();
-
-            // Pause the audio
             audioPlayer.pause();
-
-            // Small delay to ensure pause is processed, then start sentence playback
-            setTimeout(() => {
-              playSingleSentence();
-            }, 50);
-          }
-
-          updateStatus(
-            `Sentence-by-sentence mode enabled (${sentences.length} sentences)`,
-            wasPlaying ? 'playing' : 'paused'
-          );
-        } else {
-          // Disable sentence-by-sentence mode
-          toggleBtn.classList.remove('active');
-          toggleText.textContent = 'Sentence Off';
-          updateStatus(
-            'Sentence-by-sentence mode disabled',
-            isPlaying ? 'playing' : 'paused'
-          );
-        }
-      }
-
-      function updateCurrentSentenceIndex() {
-        if (sentences.length > 0) {
-          for (let i = 0; i < sentences.length; i++) {
-            if (
-              audioPlayer.currentTime >= sentences[i].start &&
-              audioPlayer.currentTime <= sentences[i].end
-            ) {
-              currentSentenceIndex = i;
-              updateCurrentSegmentMarker();
-              return;
-            }
-          }
         }
       }
 
       function playSingleSentence() {
-        if (!sentenceBysentenceMode || sentences.length === 0) {
-          // If not in sentence mode, play normally
-          audioPlayer.play().catch((error) => {
-            console.error('Error playing audio:', error);
-          });
-          return;
-        }
-
-        // Clear any existing timer
-        if (sentenceEndTimer) {
-          clearTimeout(sentenceEndTimer);
-          sentenceEndTimer = null;
-        }
-
-        // Get current sentence
-        const currentSentence = sentences[currentSentenceIndex];
-        if (!currentSentence) {
-          updateStatus('No sentence selected', 'stopped');
-          return;
-        }
-
-        // Set playback to start of current sentence
-        audioPlayer.currentTime = currentSentence.start;
-
-        // Calculate duration until end of sentence
-        const sentenceDuration = (currentSentence.end - currentSentence.start) * 1000; // Convert to milliseconds
-
-        // Start playing
-        audioPlayer.play().catch((error) => {
-          console.error('Error playing audio:', error);
-        });
-
-        // Set timer to stop at end of sentence
-        sentenceEndTimer = setTimeout(() => {
-          audioPlayer.pause();
-          updateStatus(
-            `Completed sentence ${currentSentenceIndex + 1}/${sentences.length}`,
-            'paused'
-          );
-          updateCurrentSegmentMarker();
-        }, sentenceDuration);
-
-        updateStatus(
-          `Playing sentence ${currentSentenceIndex + 1}/${sentences.length}`,
-          'playing'
-        );
+        if (currentSentenceIndex < 0 || currentSentenceIndex >= sentences.length) return;
+        
+        const sentence = sentences[currentSentenceIndex];
+        audioPlayer.currentTime = sentence.start;
+        audioPlayer.play();
+        updateStatus(`Playing line ${currentSentenceIndex + 1}`, 'playing');
+        updateCurrentSegmentMarker();
       }
 
-      function updateLyricsToggleVisibility() {
-        const toggleContainer = document.getElementById('lyricsToggleContainer');
+      function playNextSentence() {
+        if (!lrcLoaded) {
+            audioPlayer.currentTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 5);
+            return;
+        }
+        if (currentSentenceIndex < sentences.length - 1) {
+            currentSentenceIndex++;
+            if (sentenceMode) {
+                playSingleSentence();
+            } else {
+                // In normal mode, just seek to next start
+                audioPlayer.currentTime = sentences[currentSentenceIndex].start;
+                if (audioPlayer.paused) audioPlayer.play();
+            }
+        }
+      }
 
-        if (lrcLoaded) {
-          // Show the toggle button when LRC is available
-          toggleContainer.classList.add('visible');
-        } else {
-          // Hide the toggle button when no LRC
-          toggleContainer.classList.remove('visible');
-          // Also hide lyrics and reset toggle state
-          const currentText = document.getElementById('currentText');
-          const toggleBtn = document.getElementById('lyricsToggleBtn');
-          const toggleText = document.getElementById('lyricsToggleText');
-
-          currentText.style.display = 'none';
-          toggleBtn.classList.remove('active');
-          toggleText.textContent = 'Show Lyrics';
-          lyricsVisible = false;
+      function playPreviousSentence() {
+        if (!lrcLoaded) {
+            audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 5);
+            return;
+        }
+        if (currentSentenceIndex > 0) {
+            currentSentenceIndex--;
+            if (sentenceMode) {
+                playSingleSentence();
+            } else {
+                audioPlayer.currentTime = sentences[currentSentenceIndex].start;
+                if (audioPlayer.paused) audioPlayer.play();
+            }
         }
       }
 
       function updateProgress() {
-        if (audioPlayer.duration && !isNaN(audioPlayer.duration)) {
-          const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-          progressFill.style.width = Math.min(100, Math.max(0, progress)) + '%';
-          currentTimeSpan.textContent = formatTime(audioPlayer.currentTime);
+        const currentTime = audioPlayer.currentTime;
+        const duration = audioPlayer.duration;
+        
+        if (duration) {
+            progressFill.style.width = (currentTime / duration) * 100 + '%';
+            currentTimeSpan.textContent = formatTime(currentTime);
+        }
 
-          // Update duration if it wasn't set properly before
-          if (durationSpan.textContent === '0:00') {
-            durationSpan.textContent = formatTime(audioPlayer.duration);
+        // Auto-stop logic for Sentence Mode
+        if (sentenceMode && isPlaying && sentences.length > 0) {
+            const currentSentence = sentences[currentSentenceIndex];
+            // Check if we passed the end time
+            // We add a small buffer (0.1s) to prevent premature pausing if update frequency is low
+            // But user wants to hear complete line.
+            if (currentTime >= currentSentence.end) {
+                audioPlayer.pause();
+                updateStatus(`Paused after line ${currentSentenceIndex + 1}`, 'paused');
+            }
+        }
+        
+        // Update current sentence index if playing continuously (Normal Mode)
+        // Or if user seeked manually
+        if (!sentenceMode || !isPlaying) {
+             // Find which sentence we are in
+             // This is simple linear search, can be optimized but fine for small N
+             for(let i=0; i<sentences.length; i++) {
+                 // We use the original LRC times for "current" detection to be more accurate visually
+                 // But here we use the calculated sentence boundaries
+                 if (currentTime >= sentences[i].start && currentTime < sentences[i].end) {
+                     if (currentSentenceIndex !== i) {
+                         currentSentenceIndex = i;
+                         updateCurrentSegmentMarker();
+                     }
+                     break;
+                 }
+             }
+        }
+
+        if (lyricsVisible) {
+            updateCurrentText(currentTime);
+        }
+      }
+
+      function updateCurrentText(time) {
+          // Find active lyric based on time
+          // We can use currentSentenceIndex since it's synced
+          if (currentSentenceIndex >= 0 && currentSentenceIndex < sentences.length) {
+              textContentDiv.textContent = sentences[currentSentenceIndex].text;
+              textContentDiv.className = 'text-content highlighted';
           }
+      }
 
-          // Update LRC text display
-          updateCurrentText(audioPlayer.currentTime);
+      function toggleLyrics() {
+        lyricsVisible = !lyricsVisible;
+        currentTextDiv.style.display = lyricsVisible ? 'flex' : 'none';
+        document.getElementById('lyricsToggleBtn').classList.toggle('active', lyricsVisible);
+        document.getElementById('lyricsToggleText').textContent = lyricsVisible ? 'Hide Lyrics' : 'Show Lyrics';
+        if (lyricsVisible) updateCurrentText(audioPlayer.currentTime);
+      }
+
+      function toggleAutoStop() {
+        sentenceMode = !sentenceMode;
+        const btn = document.getElementById('autoStopToggleBtn');
+        const text = document.getElementById('autoStopToggleText');
+        
+        if (sentenceMode) {
+            btn.classList.add('active');
+            text.textContent = 'Sentence On';
+        } else {
+            btn.classList.remove('active');
+            text.textContent = 'Sentence Off';
         }
       }
 
-      function seekAudio(event) {
-        if (audioPlayer.duration) {
-          const progressBar = event.currentTarget;
-          const rect = progressBar.getBoundingClientRect();
-          const clickX = event.clientX - rect.left;
-          const progressBarWidth = rect.width;
-          const seekTime = (clickX / progressBarWidth) * audioPlayer.duration;
-          audioPlayer.currentTime = seekTime;
-        }
-      }
-
+      // Helper functions
       function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
       }
 
-      function updateStatus(message, type) {
-        if (statusDiv) {
-          statusDiv.textContent = message;
-          statusDiv.className = 'status ' + type;
-        }
+      function updateStatus(msg, type) {
+        // Status display removed
       }
 
-      async function detectSilenceBoundaries(file) {
-        // Only process if LRC data is available
-        if (lrcLoaded && lrcData.length > 0) {
-          updateStatus('Using LRC-based sentence boundaries...', 'stopped');
-          generateSentencesFromLrc();
-          updateStatus(
-            `Using ${sentences.length} LRC-based sentence segments`,
-            'stopped'
-          );
+      function onPlay() {
+        isPlaying = true;
+        updateStatus('Playing', 'playing');
+        document.getElementById('playPauseBtn').textContent = 'Pause';
+      }
 
-          // Visualize segments on progress bar
-          setTimeout(() => visualizeSegments(), 100);
-          return sentences;
-        } else {
-          // If no LRC, just initialize empty sentences array
-          sentences = [];
-          currentSentenceIndex = 0;
-          updateStatus('No LRC file loaded. Using simple 5-second navigation.', 'stopped');
-          return sentences;
-        }
+      function onPause() {
+        isPlaying = false;
+        updateStatus('Paused', 'paused');
+        document.getElementById('playPauseBtn').textContent = 'Play';
+      }
+      
+      function onAudioEnded() {
+          isPlaying = false;
+          updateStatus('Ended', 'stopped');
+          document.getElementById('playPauseBtn').textContent = 'Play';
+      }
 
-        return segments;
+      function onAudioLoaded() {
+        durationSpan.textContent = formatTime(audioPlayer.duration);
+        visualizeSegments();
+      }
+
+      function enableControls() {
+        document.querySelectorAll('button').forEach(b => b.disabled = false);
+      }
+      
+      function disableControls() {
+         // Keep Load button enabled
+         document.querySelectorAll('button:not(.open-file)').forEach(b => b.disabled = true);
+      }
+
+      function updateLyricsToggleVisibility() {
+          const lyricsContainer = document.getElementById('lyricsToggleContainer');
+          const autoStopContainer = document.querySelector('.auto-stop-toggle-container');
+          
+          if (lrcLoaded) {
+              lyricsContainer.classList.add('visible');
+              autoStopContainer.classList.add('visible');
+          } else {
+              lyricsContainer.classList.remove('visible');
+              autoStopContainer.classList.remove('visible');
+          }
       }
 
       function visualizeSegments() {
-        const progressBar = document.querySelector('.progress-bar');
-
-        // Remove existing markers
-        const existingMarkers = progressBar.querySelectorAll('.segment-marker');
-        existingMarkers.forEach((marker) => marker.remove());
-
-        if (sentences.length > 0 && audioPlayer.duration) {
-          sentences.forEach((segment, index) => {
-            const marker = document.createElement('div');
-            marker.className = 'segment-marker';
-            if (index === currentSentenceIndex) {
-              marker.className += ' current-segment-marker';
-            }
-
-            const position = (segment.start / audioPlayer.duration) * 100;
-            marker.style.left = position + '%';
-
-            // Add tooltip with segment info
-            marker.title = `Segment ${index + 1}: ${formatTime(
-              segment.start
-            )} - ${formatTime(segment.end)}`;
-
-            progressBar.appendChild(marker);
+          const bar = document.querySelector('.progress-bar');
+          bar.querySelectorAll('.segment-marker').forEach(m => m.remove());
+          
+          sentences.forEach((s, i) => {
+              const m = document.createElement('div');
+              m.className = 'segment-marker';
+              m.style.left = (s.start / audioPlayer.duration * 100) + '%';
+              bar.appendChild(m);
           });
-        }
+          updateCurrentSegmentMarker();
       }
 
       function updateCurrentSegmentMarker() {
-        const markers = document.querySelectorAll('.segment-marker');
-
-        markers.forEach((marker, index) => {
-          if (index === currentSentenceIndex) {
-            marker.className = 'segment-marker current-segment-marker';
-          } else {
-            marker.className = 'segment-marker';
-          }
-        });
+          const markers = document.querySelectorAll('.segment-marker');
+          markers.forEach((m, i) => {
+              if (i === currentSentenceIndex) m.classList.add('current-segment-marker');
+              else m.classList.remove('current-segment-marker');
+          });
       }
-
-      // ================================
-      // SENTENCE PLAYBACK FUNCTIONS
-      // ================================
-
-      function playPreviousSentence() {
-        if (!lrcLoaded) {
-          // No LRC - just move 3 seconds back
-          const newTime = Math.max(0, audioPlayer.currentTime - 3);
-          audioPlayer.currentTime = newTime;
-          updateStatus('Moved back 3 seconds', isPlaying ? 'playing' : 'paused');
-          // Resume playback if it was playing
-          if (!audioPlayer.paused) {
-            audioPlayer.play().catch((error) => {
-              console.error('Error playing audio:', error);
-            });
-          }
-        } else {
-          previousSentence();
-          // Auto-play the selected sentence
-          if (audioPlayer.src && sentences.length > 0) {
-            if (sentenceBysentenceMode) {
-              playSingleSentence();
-            } else {
-              audioPlayer.play().catch((error) => {
-                console.error('Error playing audio:', error);
-              });
-            }
-          }
-        }
+      
+      function seekAudio(event) {
+          const rect = event.currentTarget.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const p = x / rect.width;
+          audioPlayer.currentTime = p * audioPlayer.duration;
+          // If in sentence mode, we might want to snap to the nearest sentence or just play from there
+          // For simplicity, just let it play, updateProgress will handle index update
       }
+      
+      // Speed controls
+      function decreaseSpeed() { audioPlayer.playbackRate = Math.max(0.5, audioPlayer.playbackRate - 0.1); updateSpeedDisplay(); }
+      function increaseSpeed() { audioPlayer.playbackRate = Math.min(2.0, audioPlayer.playbackRate + 0.1); updateSpeedDisplay(); }
+      function resetSpeed() { audioPlayer.playbackRate = 1.0; updateSpeedDisplay(); }
+      function updateSpeedDisplay() { document.getElementById('speedDisplay').textContent = audioPlayer.playbackRate.toFixed(1) + 'x'; }
 
-      function playNextSentence() {
-        if (!lrcLoaded) {
-          // No LRC - just move 3 seconds forward
-          const newTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 3);
-          audioPlayer.currentTime = newTime;
-          updateStatus('Moved forward 3 seconds', isPlaying ? 'playing' : 'paused');
-          // Resume playback if it was playing
-          if (!audioPlayer.paused) {
-            audioPlayer.play().catch((error) => {
-              console.error('Error playing audio:', error);
-            });
-          }
-        } else {
-          nextSentence();
-          // Auto-play the selected sentence
-          if (audioPlayer.src && sentences.length > 0) {
-            if (sentenceBysentenceMode) {
-              playSingleSentence();
-            } else {
-              audioPlayer.play().catch((error) => {
-                console.error('Error playing audio:', error);
-              });
-            }
-          }
-        }
-      }
-
-      function repeatCurrentSentence() {
-        // Clear any existing timer
-        if (sentenceEndTimer) {
-          clearTimeout(sentenceEndTimer);
-          sentenceEndTimer = null;
-        }
-
-        if (sentences.length === 0) {
-          // If no sentences defined, restart from current position
-          if (audioPlayer.src) {
-            audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 3);
-            audioPlayer.play().catch((error) => {
-              console.error('Error playing audio:', error);
-            });
-            updateStatus('Repeating current section', 'playing');
-          }
-          return;
-        }
-
-        // Go to the start of current sentence
-        if (currentSentenceIndex >= 0 && currentSentenceIndex < sentences.length) {
-          audioPlayer.currentTime = sentences[currentSentenceIndex].start;
-          updateCurrentSegmentMarker();
-          const duration =
-            sentences[currentSentenceIndex].end - sentences[currentSentenceIndex].start;
-          updateStatus(
-            `Repeating sentence ${currentSentenceIndex + 1}/${
-              sentences.length
-            } (${formatTime(duration)})`,
-            'playing'
-          );
-
-          // Use sentence-by-sentence playback if enabled, otherwise normal play
-          if (sentenceBysentenceMode) {
-            playSingleSentence();
-          } else {
-            audioPlayer.play().catch((error) => {
-              console.error('Error playing audio:', error);
-            });
-          }
-        }
-      }
-
-      function previousSentence() {
-        // Clear any existing timer
-        if (sentenceEndTimer) {
-          clearTimeout(sentenceEndTimer);
-          sentenceEndTimer = null;
-        }
-
-        if (lrcLoaded && sentences.length > 0) {
-          // If we have LRC data, use sentence navigation
-          currentSentenceIndex = Math.max(0, currentSentenceIndex - 1);
-          if (audioPlayer.src) {
-            audioPlayer.currentTime = sentences[currentSentenceIndex].start;
-            updateCurrentSegmentMarker();
-          }
-        } else {
-          // No LRC - just move 5 seconds back
-          const newTime = Math.max(0, audioPlayer.currentTime - 5);
-          audioPlayer.currentTime = newTime;
-          updateStatus('Moved back 5 seconds', isPlaying ? 'playing' : 'paused');
-        }
-
-        // If in sentence-by-sentence mode and audio was playing, play the new sentence
-        if (sentenceBysentenceMode && !audioPlayer.paused) {
-          playSingleSentence();
-        }
-      }
-
-      function nextSentence() {
-        // Clear any existing timer
-        if (sentenceEndTimer) {
-          clearTimeout(sentenceEndTimer);
-          sentenceEndTimer = null;
-        }
-
-        if (lrcLoaded && sentences.length > 0) {
-          // If we have LRC data, use sentence navigation
-          currentSentenceIndex = Math.min(sentences.length - 1, currentSentenceIndex + 1);
-          if (audioPlayer.src) {
-            audioPlayer.currentTime = sentences[currentSentenceIndex].start;
-            updateCurrentSegmentMarker();
-          }
-        } else {
-          // No LRC - just move 5 seconds forward
-          const newTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 5);
-          audioPlayer.currentTime = newTime;
-          updateStatus('Moved forward 5 seconds', isPlaying ? 'playing' : 'paused');
-        }
-
-        // If in sentence-by-sentence mode and audio was playing, play the new sentence
-        if (sentenceBysentenceMode && !audioPlayer.paused) {
-          playSingleSentence();
-        }
-      }
-
-      // Update current sentence index based on current time
-      audioPlayer.addEventListener('timeupdate', () => {
-        if (sentences.length > 0) {
-          for (let i = 0; i < sentences.length; i++) {
-            if (
-              audioPlayer.currentTime >= sentences[i].start &&
-              audioPlayer.currentTime <= sentences[i].end
-            ) {
-              if (currentSentenceIndex !== i) {
-                currentSentenceIndex = i;
-                updateCurrentSegmentMarker();
-                lastSentenceIndex = i;
-              }
-              break;
-            }
-          }
-        }
-      });
-
-      // ================================
-      // KEYBOARD SHORTCUTS & HELP
-      // ================================
-
-      /**
-       * Enhanced keyboard shortcuts for better usability
-       */
-      document.addEventListener('keydown', (e) => {
-        // Don't handle shortcuts if an input is focused
-        if (isInputFocused()) {
-          return;
-        }
-
-        // Handle shortcuts that work without audio loaded
-        switch (e.code) {
-          case 'KeyH':
-          case 'F1':
-            e.preventDefault();
-            toggleHelp();
-            return;
-          case 'Escape':
-            e.preventDefault();
-            hideHelp();
-            return;
-          case 'KeyO':
-            e.preventDefault();
-            openBothFiles();
-            return;
-        }
-
-        // Handle shortcuts that require audio to be loaded
-        if (audioPlayer.src) {
-          switch (e.code) {
-            case 'KeyJ':
-              e.preventDefault();
-              playPreviousSentence();
-              break;
-            case 'KeyL':
-              e.preventDefault();
-              playNextSentence();
-              break;
-            case 'KeyK':
-              e.preventDefault();
-              togglePlayPause();
-              break;
-            case 'KeyU':
-              e.preventDefault();
-              decreaseSpeed();
-              break;
-            case 'KeyN':
-              e.preventDefault();
-              increaseSpeed();
-              break;
-            case 'KeyM':
-              e.preventDefault();
-              resetSpeed();
-              break;
-            case 'KeyS':
-              e.preventDefault();
-              if (e.ctrlKey || e.metaKey) {
-                return; // Allow browser save
-              }
-              openLrcFile();
-              break;
-            case 'KeyT':
-              e.preventDefault();
-              if (lrcLoaded) {
-                toggleLyrics();
-              }
-              break;
-            case 'KeyA':
-              e.preventDefault();
-              toggleAutoStop();
-              break;
-          }
-        }
-      });
-
-      /**
-       * Check if any input element is currently focused
-       */
-      function isInputFocused() {
-        const activeElement = document.activeElement;
-        return (
-          activeElement &&
-          (activeElement.tagName === 'INPUT' ||
-            activeElement.tagName === 'TEXTAREA' ||
-            activeElement.contentEditable === 'true')
-        );
-      }
-
-      /**
-       * Toggle keyboard shortcuts help overlay
-       */
-      function toggleHelp() {
-        const helpOverlay = document.getElementById('helpOverlay');
-
-        if (helpOverlay && helpOverlay.style.display === 'flex') {
-          // Help is currently visible, so hide it
-          hideHelp();
-        } else {
-          // Help is hidden or doesn't exist, so show it
-          showHelp();
-        }
-      }
-
-      /**
-       * Show keyboard shortcuts help overlay
-       */
-      function showHelp() {
-        let helpOverlay = document.getElementById('helpOverlay');
-
-        if (!helpOverlay) {
-          helpOverlay = document.createElement('div');
-          helpOverlay.id = 'helpOverlay';
-          helpOverlay.innerHTML = `
-            <div class="help-content">
-              <h3>⌨️ Keyboard Shortcuts</h3>
-              <div class="shortcut-list">
-                <div><kbd>J</kbd> Play Previous</div>
-                <div><kbd>L</kbd> Play Next</div>
-                <div><kbd>K</kbd> Play/Pause</div>
-                <div><kbd>U</kbd> Speed Down</div>
-                <div><kbd>N</kbd> Speed Up</div>
-                <div><kbd>M</kbd> Reset Speed</div>
-                <div><kbd>A</kbd> Toggle Auto-Stop</div>
-                <div><kbd>O</kbd> Load Files</div>
-                <div><kbd>T</kbd> Toggle Lyrics</div>
-                <div><kbd>H</kbd> Toggle Help</div>
-                <div><kbd>Esc</kbd> Close Help</div>
-              </div>
-              <p class="help-note">💡 Click anywhere or press Esc to close</p>
-            </div>
-          `;
-
-          helpOverlay.onclick = hideHelp;
-          document.body.appendChild(helpOverlay);
-        }
-
-        helpOverlay.style.display = 'flex';
-        setTimeout(() => helpOverlay.classList.add('show'), 10);
-      }
-
-      /**
-       * Hide keyboard shortcuts help overlay
-       */
-      function hideHelp() {
-        const helpOverlay = document.getElementById('helpOverlay');
-        if (helpOverlay) {
-          helpOverlay.classList.remove('show');
-          setTimeout(() => (helpOverlay.style.display = 'none'), 300);
-        }
-      }
-
-      // Initial status
-      updateStatus('Select an audio file to begin', 'stopped');
-
-      // Register Service Worker for PWA functionality
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          // Create a simple service worker inline
-          const swCode = `
-            const CACHE_NAME = 'audio-player-v1';
-            const urlsToCache = [
-              './',
-              './index.html'
-            ];
-
-            self.addEventListener('install', event => {
-              event.waitUntil(
-                caches.open(CACHE_NAME)
-                  .then(cache => cache.addAll(urlsToCache))
-              );
-            });
-
-            self.addEventListener('fetch', event => {
-              event.respondWith(
-                caches.match(event.request)
-                  .then(response => {
-                    if (response) {
-                      return response;
-                    }
-                    return fetch(event.request);
-                  })
-              );
-            });
-          `;
-
-          const blob = new Blob([swCode], { type: 'application/javascript' });
-          const swUrl = URL.createObjectURL(blob);
-
-          navigator.serviceWorker
-            .register(swUrl)
-            .then((registration) => {
-              console.log('Service Worker registered:', registration);
-            })
-            .catch((error) => {
-              console.log('Service Worker registration failed:', error);
-            });
-        });
-      }
-
-      // Cleanup blob URLs when page unloads to prevent memory leaks
-      window.addEventListener('beforeunload', () => {
-        if (audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audioPlayer.src);
-        }
-      });
     </script>
   </body>
 </html>
