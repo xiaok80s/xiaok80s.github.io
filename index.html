@@ -178,24 +178,8 @@
         box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
       }
 
-      .lyrics-toggle-container {
-        display: none;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .lyrics-toggle-container.visible {
-        display: flex;
-      }
-
-      .auto-stop-toggle-container {
-        display: none;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .auto-stop-toggle-container.visible {
-        display: flex;
+      .hidden {
+        display: none !important;
       }
 
       .lyrics-toggle {
@@ -679,19 +663,18 @@
       </div>
 
       <div class="toggle-buttons-container">
-        <div class="auto-stop-toggle-container">
-          <button
-            class="lyrics-toggle active"
-            id="autoStopToggleBtn"
-            onclick="toggleAutoStop()">
-            <span id="autoStopToggleText">Sentence On</span>
-          </button>
-        </div>
-        <div class="lyrics-toggle-container" id="lyricsToggleContainer">
-          <button class="lyrics-toggle" id="lyricsToggleBtn" onclick="toggleLyrics()">
-            <span id="lyricsToggleText">Show Lyrics</span>
-          </button>
-        </div>
+        <button
+          class="lyrics-toggle active hidden"
+          id="autoStopToggleBtn"
+          onclick="toggleAutoStop()">
+          <span id="autoStopToggleText">Sentence On</span>
+        </button>
+        <button 
+          class="lyrics-toggle hidden" 
+          id="lyricsToggleBtn" 
+          onclick="toggleLyrics()">
+          <span id="lyricsToggleText">Show Lyrics</span>
+        </button>
       </div>
 
       <div class="progress-container">
@@ -1114,15 +1097,15 @@
       }
 
       function updateLyricsToggleVisibility() {
-          const lyricsContainer = document.getElementById('lyricsToggleContainer');
-          const autoStopContainer = document.querySelector('.auto-stop-toggle-container');
+          const lyricsBtn = document.getElementById('lyricsToggleBtn');
+          const autoStopBtn = document.getElementById('autoStopToggleBtn');
           
           if (lrcLoaded) {
-              lyricsContainer.classList.add('visible');
-              autoStopContainer.classList.add('visible');
+              lyricsBtn.classList.remove('hidden');
+              autoStopBtn.classList.remove('hidden');
           } else {
-              lyricsContainer.classList.remove('visible');
-              autoStopContainer.classList.remove('visible');
+              lyricsBtn.classList.add('hidden');
+              autoStopBtn.classList.add('hidden');
           }
       }
 
